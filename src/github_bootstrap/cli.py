@@ -10,7 +10,7 @@ from github_bootstrap.github.client import (
     GitHubClient,
     GitHubError,
 )
-from github_bootstrap.planner.plan import Plan
+from github_bootstrap.planner.plan import create_plan
 from github_bootstrap.specification.loader import (
     SpecificationError,
     load_specification,
@@ -92,14 +92,26 @@ def sync(
 ) -> None:
     """Synchronize GitHub resources."""
 
-    plan = Plan()
+    specification_file = Path(".github-project.yaml")
 
-    plan.add("Create Project V2 from specification")
+    try:
+        specification = load_specification(specification_file)
+        validate_specification(specification)
+    except (
+        SpecificationError,
+        SpecificationValidationError,
+    ) as error:
+        typer.echo(f"Error: {error}")
+        raise typer.Exit(code=1) from error
+
+    plan = create_plan(specification)
 
     if dry_run:
         typer.echo("Synchronization plan:")
+
         for action in plan.actions:
             typer.echo(f"+ {action}")
+
         return
 
     typer.echo("Execution is not implemented yet.")

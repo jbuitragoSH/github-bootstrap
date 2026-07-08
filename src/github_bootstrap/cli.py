@@ -10,6 +10,7 @@ from github_bootstrap.github.client import (
     GitHubClient,
     GitHubError,
 )
+from github_bootstrap.planner.plan import Plan
 from github_bootstrap.specification.loader import (
     SpecificationError,
     load_specification,
@@ -79,3 +80,26 @@ def github_check() -> None:
 
     typer.echo("GitHub connection successful")
     typer.echo(f"Authenticated as: {user['login']}")
+
+
+@app.command()
+def sync(
+    dry_run: bool = typer.Option(
+        False,
+        "--dry-run",
+        help="Show planned changes without applying them.",
+    ),
+) -> None:
+    """Synchronize GitHub resources."""
+
+    plan = Plan()
+
+    plan.add("Create Project V2 from specification")
+
+    if dry_run:
+        typer.echo("Synchronization plan:")
+        for action in plan.actions:
+            typer.echo(f"+ {action}")
+        return
+
+    typer.echo("Execution is not implemented yet.")

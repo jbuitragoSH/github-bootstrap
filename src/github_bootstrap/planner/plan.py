@@ -3,6 +3,8 @@
 from dataclasses import dataclass, field
 from typing import Any
 
+from github_bootstrap.github.state import ProjectState
+
 
 @dataclass
 class Plan:
@@ -21,13 +23,15 @@ class Plan:
 
 def create_plan(
     specification: dict[str, Any],
+    state: ProjectState,
 ) -> Plan:
-    """Create synchronization plan from specification."""
+    """Create synchronization plan."""
+
     plan = Plan()
 
-    project = specification["project"]
-    title = project["title"]
+    title = specification["project"]["title"]
 
-    plan.add(f"Create Project V2: {title}")
+    if not state.exists:
+        plan.add(f"Create Project V2: {title}")
 
     return plan

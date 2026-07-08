@@ -104,7 +104,17 @@ def sync(
         typer.echo(f"Error: {error}")
         raise typer.Exit(code=1) from error
 
-    plan = create_plan(specification)
+    try:
+        client = GitHubClient()
+        state = client.find_project(specification["project"]["title"])
+    except GitHubError as error:
+        typer.echo(f"Error: {error}")
+        raise typer.Exit(code=1) from error
+
+    plan = create_plan(
+        specification,
+        state,
+    )
 
     if dry_run:
         typer.echo("Synchronization plan:")

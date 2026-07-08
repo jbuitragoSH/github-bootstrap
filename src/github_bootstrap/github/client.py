@@ -5,6 +5,8 @@ from typing import Any
 
 import httpx
 
+from github_bootstrap.github.state import ProjectState
+
 
 class GitHubError(Exception):
     """Raised when GitHub communication fails."""
@@ -54,3 +56,42 @@ class GitHubClient:
             raise GitHubError("Invalid response from GitHub API.")
 
         return viewer
+
+    def find_project(
+        self,
+        title: str,
+    ) -> ProjectState:
+        """Find a project by title.
+
+        Currently checks organization projects.
+        """
+        query = """
+        query {
+          viewer {
+            login
+          }
+        }
+        """
+
+        response = httpx.post(
+            self.API_URL,
+            headers={
+                "Authorization": f"Bearer {self.token}",
+            },
+            json={"query": query},
+            timeout=10.0,
+        )
+
+        if response.status_code != 200:
+            raise GitHubError(f"GitHub request failed: {response.status_code}")
+
+        data = response.json()
+
+        if "errors" in data:
+            raise GitHubError(str(data["errors"]))
+
+        # Placeholder until Projects V2 query is implemented.
+        return ProjectState(
+            exists=False,
+            title=title,
+        )

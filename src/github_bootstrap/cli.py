@@ -10,6 +10,10 @@ from github_bootstrap.specification.loader import (
     SpecificationError,
     load_specification,
 )
+from github_bootstrap.specification.validator import (
+    SpecificationValidationError,
+    validate_specification,
+)
 
 app = typer.Typer(
     name="github-bootstrap",
@@ -50,5 +54,10 @@ def validate(
         typer.echo(f"Error: {error}")
         raise typer.Exit(code=1) from error
 
+    try:
+        validate_specification(specification)
+    except SpecificationValidationError as error:
+        typer.echo(f"Validation error: {error}")
+        raise typer.Exit(code=1) from error
+
     typer.echo(f"Valid specification: {file}")
-    typer.echo(f"Keys: {list(specification.keys())}")

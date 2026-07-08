@@ -5,6 +5,7 @@ description = "Bootstrap GitHub Projects V2 from declarative YAML specifications
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "httpx>=0.28.1",
     "pyyaml>=6.0.3",
     "typer>=0.26.8",
 ]

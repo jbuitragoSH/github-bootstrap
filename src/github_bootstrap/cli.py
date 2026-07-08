@@ -6,6 +6,10 @@ from typing import Annotated, Any
 import typer
 
 from github_bootstrap import __version__
+from github_bootstrap.github.client import (
+    GitHubClient,
+    GitHubError,
+)
 from github_bootstrap.specification.loader import (
     SpecificationError,
     load_specification,
@@ -61,3 +65,17 @@ def validate(
         raise typer.Exit(code=1) from error
 
     typer.echo(f"Valid specification: {file}")
+
+
+@app.command()
+def github_check() -> None:
+    """Check GitHub authentication."""
+    try:
+        client = GitHubClient()
+        user = client.viewer()
+    except GitHubError as error:
+        typer.echo(f"Error: {error}")
+        raise typer.Exit(code=1) from error
+
+    typer.echo("GitHub connection successful")
+    typer.echo(f"Authenticated as: {user['login']}")

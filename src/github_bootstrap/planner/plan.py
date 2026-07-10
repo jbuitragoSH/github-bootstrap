@@ -6,13 +6,22 @@ from github_bootstrap.github.state import ProjectState
 from github_bootstrap.specification.models import ProjectSpecification
 
 
+@dataclass(frozen=True)
+class PlanAction:
+    """Represents a synchronization action."""
+
+    operation: str
+    resource: str
+    description: str
+
+
 @dataclass
 class Plan:
     """Represents changes required to synchronize GitHub."""
 
-    actions: list[str] = field(default_factory=list)
+    actions: list[PlanAction] = field(default_factory=list)
 
-    def add(self, action: str) -> None:
+    def add(self, action: PlanAction) -> None:
         """Add an action to the plan."""
         self.actions.append(action)
 
@@ -32,6 +41,6 @@ def create_plan(
     title = specification.project.title
 
     if not state.exists:
-        plan.add(f"Create Project V2: {title}")
+        plan.add(PlanAction("CREATE", "Project", f"Create Project V2: {title}"))
 
     return plan

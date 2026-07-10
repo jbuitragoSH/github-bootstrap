@@ -1,9 +1,9 @@
 """Models for synchronization plans."""
 
 from dataclasses import dataclass, field
-from typing import Any
 
 from github_bootstrap.github.state import ProjectState
+from github_bootstrap.specification.models import ProjectSpecification
 
 
 @dataclass
@@ -22,14 +22,14 @@ class Plan:
 
 
 def create_plan(
-    specification: dict[str, Any],
+    specification: ProjectSpecification,
     state: ProjectState,
 ) -> Plan:
     """Create synchronization plan."""
 
     plan = Plan()
 
-    title = specification["project"]["title"]
+    title = specification.project.title
 
     if not state.exists:
         plan.add(f"Create Project V2: {title}")

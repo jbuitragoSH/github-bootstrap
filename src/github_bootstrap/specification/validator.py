@@ -2,6 +2,11 @@
 
 from typing import Any
 
+from github_bootstrap.specification.models import (
+    Project,
+    ProjectSpecification,
+)
+
 
 class SpecificationValidationError(Exception):
     """Raised when specification validation fails."""
@@ -9,7 +14,7 @@ class SpecificationValidationError(Exception):
 
 def validate_specification(
     specification: dict[str, Any],
-) -> None:
+) -> ProjectSpecification:
     """Validate required specification fields.
 
     Args:
@@ -35,3 +40,11 @@ def validate_specification(
 
     if "title" not in project:
         raise SpecificationValidationError("Missing required field: project.title")
+
+    return ProjectSpecification(
+        organization=specification["organization"],
+        repository=specification["repository"],
+        project=Project(
+            title=project["title"],
+        ),
+    )

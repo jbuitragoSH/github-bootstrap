@@ -1,6 +1,5 @@
-organization: example
-
-repository: example
+organization: jbuitragoSH
+repository: github-bootstrap
 
 project:
-  title: Example Project
+  title: GitHub Bootstrap Development

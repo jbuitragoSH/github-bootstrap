@@ -61,14 +61,16 @@ class GitHubClient:
         self,
         title: str,
     ) -> ProjectState:
-        """Find a project by title.
+        """Find a GitHub Project V2 by title."""
 
-        Currently checks organization projects.
-        """
         query = """
         query {
           viewer {
-            login
+            projectsV2(first: 100) {
+              nodes {
+                title
+              }
+            }
           }
         }
         """
@@ -90,7 +92,15 @@ class GitHubClient:
         if "errors" in data:
             raise GitHubError(str(data["errors"]))
 
-        # Placeholder until Projects V2 query is implemented.
+        projects = data["data"]["viewer"]["projectsV2"]["nodes"]
+
+        for project in projects:
+            if project["title"] == title:
+                return ProjectState(
+                    exists=True,
+                    title=title,
+                )
+
         return ProjectState(
             exists=False,
             title=title,

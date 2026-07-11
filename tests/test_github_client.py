@@ -5,7 +5,8 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from github_bootstrap.github.client import GitHubClient, GitHubError
+from github_bootstrap.github.client import GitHubClient
+from github_bootstrap.github.exceptions import GitHubError
 
 
 def make_response(
@@ -128,7 +129,7 @@ def test_find_project_found(mock_post: Mock) -> None:
 
     client = GitHubClient(token="token")
 
-    project = client.find_project("Bootstrap")
+    project = client.projects.find("Bootstrap")
 
     assert project.exists is True
     assert project.title == "Bootstrap"
@@ -145,6 +146,6 @@ def test_find_project_missing(mock_post: Mock) -> None:
 
     client = GitHubClient(token="token")
 
-    project = client.find_project("Bootstrap")
+    project = client.projects.find("Bootstrap")
 
     assert project.exists is False

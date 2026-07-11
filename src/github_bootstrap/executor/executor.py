@@ -23,7 +23,7 @@ class Executor:
 
         for action in plan.actions:
             if action.operation == "create" and action.resource == "project":
-                self.client.create_project(
+                self.client.projects.create(
                     owner_id=viewer["id"],
                     title=action.payload["title"],
                 )

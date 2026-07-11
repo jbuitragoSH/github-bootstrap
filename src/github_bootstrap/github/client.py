@@ -5,12 +5,8 @@ from typing import Any
 
 import httpx
 
-from github_bootstrap.github.models import GitHubProject
-from github_bootstrap.github.state import ProjectState
-
-
-class GitHubError(Exception):
-    """Raised when GitHub communication fails."""
+from github_bootstrap.github.exceptions import GitHubError
+from github_bootstrap.github.projects import ProjectsAPI
 
 
 class GitHubClient:
@@ -20,7 +16,7 @@ class GitHubClient:
 
     def __init__(self, token: str | None = None) -> None:
         self.token = token or os.getenv("GITHUB_TOKEN")
-
+        self.projects: ProjectsAPI = ProjectsAPI(self)
         if not self.token:
             raise GitHubError("GITHUB_TOKEN environment variable is required.")
 
@@ -78,80 +74,3 @@ class GitHubClient:
             raise GitHubError("Invalid response from GitHub API.")
 
         return viewer
-
-    def find_project(
-        self,
-        title: str,
-    ) -> ProjectState:
-        """Find a GitHub Project V2 by title."""
-
-        query = """
-        query {
-          viewer {
-            projectsV2(first: 100) {
-              nodes {
-                title
-              }
-            }
-          }
-        }
-        """
-
-        data = self.execute(query)
-
-        viewer = data.get("viewer")
-
-        if not isinstance(viewer, dict):
-            raise GitHubError("Invalid response from GitHub API.")
-
-        projects = viewer["projectsV2"]["nodes"]
-
-        for project in projects:
-            if project["title"] == title:
-                return ProjectState(
-                    exists=True,
-                    title=title,
-                )
-
-        return ProjectState(
-            exists=False,
-            title=title,
-        )
-
-    def create_project(
-        self,
-        owner_id: str,
-        title: str,
-    ) -> GitHubProject:
-        """Create a Project V2."""
-
-        mutation = """
-        mutation($ownerId: ID!, $title: String!) {
-        createProjectV2(
-            input: {
-            ownerId: $ownerId
-            title: $title
-            }
-        ) {
-            projectV2 {
-            id
-            title
-            }
-        }
-        }
-        """
-
-        data = self.execute(
-            mutation,
-            {
-                "ownerId": owner_id,
-                "title": title,
-            },
-        )
-
-        project = data["createProjectV2"]["projectV2"]
-
-        return GitHubProject(
-            id=project["id"],
-            title=project["title"],
-        )

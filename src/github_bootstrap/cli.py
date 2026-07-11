@@ -7,10 +7,8 @@ import typer
 
 from github_bootstrap import __version__
 from github_bootstrap.executor.executor import Executor
-from github_bootstrap.github.client import (
-    GitHubClient,
-    GitHubError,
-)
+from github_bootstrap.github.client import GitHubClient
+from github_bootstrap.github.exceptions import GitHubError
 from github_bootstrap.planner.plan import create_plan
 from github_bootstrap.specification.loader import (
     SpecificationError,
@@ -107,14 +105,16 @@ def sync(
 
     try:
         client = GitHubClient()
-        state = client.find_project(project_specification.project.title)
+        project = client.projects.find(
+            project_specification.project.title,
+        )
     except GitHubError as error:
         typer.echo(f"Error: {error}")
         raise typer.Exit(code=1) from error
 
     plan = create_plan(
         project_specification,
-        state,
+        project,
     )
     if dry_run:
         typer.echo("Synchronization plan:")

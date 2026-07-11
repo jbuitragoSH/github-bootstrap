@@ -5,6 +5,7 @@ from typing import Any
 
 import httpx
 
+from github_bootstrap.github.models import GitHubProject
 from github_bootstrap.github.state import ProjectState
 
 
@@ -121,7 +122,7 @@ class GitHubClient:
         self,
         owner_id: str,
         title: str,
-    ) -> None:
+    ) -> GitHubProject:
         """Create a Project V2."""
 
         mutation = """
@@ -140,10 +141,17 @@ class GitHubClient:
         }
         """
 
-        self.execute(
+        data = self.execute(
             mutation,
             {
                 "ownerId": owner_id,
                 "title": title,
             },
+        )
+
+        project = data["createProjectV2"]["projectV2"]
+
+        return GitHubProject(
+            id=project["id"],
+            title=project["title"],
         )

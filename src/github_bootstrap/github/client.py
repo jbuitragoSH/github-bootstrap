@@ -23,34 +23,55 @@ class GitHubClient:
         if not self.token:
             raise GitHubError("GITHUB_TOKEN environment variable is required.")
 
-    def viewer(self) -> dict[str, Any]:
-        """Return authenticated GitHub user information."""
-        query = """
-        query {
-        viewer {
-            login
-        }
-        }
-        """
+    def execute(
+        self,
+        query: str,
+        variables: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Execute a GraphQL operation."""
 
         response = httpx.post(
             self.API_URL,
             headers={
                 "Authorization": f"Bearer {self.token}",
             },
-            json={"query": query},
+            json={
+                "query": query,
+                "variables": variables or {},
+            },
             timeout=10.0,
         )
 
         if response.status_code != 200:
             raise GitHubError(f"GitHub request failed: {response.status_code}")
 
-        data: dict[str, Any] = response.json()
+        payload: dict[str, Any] = response.json()
 
-        if "errors" in data:
-            raise GitHubError(str(data["errors"]))
+        if "errors" in payload:
+            messages = ", ".join(error["message"] for error in payload["errors"])
+            raise GitHubError(messages)
 
-        viewer = data.get("data", {}).get("viewer")
+        data = payload.get("data")
+
+        if not isinstance(data, dict):
+            raise GitHubError("Invalid response from GitHub API.")
+
+        return data
+
+    def viewer(self) -> dict[str, Any]:
+        """Return authenticated GitHub user information."""
+        query = """
+        query {
+        viewer {
+            id
+            login
+        }
+        }
+        """
+
+        data = self.execute(query)
+
+        viewer = data.get("viewer")
 
         if not isinstance(viewer, dict):
             raise GitHubError("Invalid response from GitHub API.")
@@ -75,24 +96,14 @@ class GitHubClient:
         }
         """
 
-        response = httpx.post(
-            self.API_URL,
-            headers={
-                "Authorization": f"Bearer {self.token}",
-            },
-            json={"query": query},
-            timeout=10.0,
-        )
+        data = self.execute(query)
 
-        if response.status_code != 200:
-            raise GitHubError(f"GitHub request failed: {response.status_code}")
+        viewer = data.get("viewer")
 
-        data = response.json()
+        if not isinstance(viewer, dict):
+            raise GitHubError("Invalid response from GitHub API.")
 
-        if "errors" in data:
-            raise GitHubError(str(data["errors"]))
-
-        projects = data["data"]["viewer"]["projectsV2"]["nodes"]
+        projects = viewer["projectsV2"]["nodes"]
 
         for project in projects:
             if project["title"] == title:
@@ -104,4 +115,35 @@ class GitHubClient:
         return ProjectState(
             exists=False,
             title=title,
+        )
+
+    def create_project(
+        self,
+        owner_id: str,
+        title: str,
+    ) -> None:
+        """Create a Project V2."""
+
+        mutation = """
+        mutation($ownerId: ID!, $title: String!) {
+        createProjectV2(
+            input: {
+            ownerId: $ownerId
+            title: $title
+            }
+        ) {
+            projectV2 {
+            id
+            title
+            }
+        }
+        }
+        """
+
+        self.execute(
+            mutation,
+            {
+                "ownerId": owner_id,
+                "title": title,
+            },
         )

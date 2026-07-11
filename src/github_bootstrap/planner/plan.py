@@ -1,6 +1,7 @@
 """Models for synchronization plans."""
 
 from dataclasses import dataclass, field
+from typing import Any
 
 from github_bootstrap.github.state import ProjectState
 from github_bootstrap.planner.actions import PlanAction
@@ -14,16 +15,14 @@ class Plan:
     actions: list[PlanAction] = field(default_factory=list)
 
     def add(
-        self,
-        operation: str,
-        resource: str,
-        description: str,
+        self, operation: str, resource: str, description: str, payload: dict[str, Any]
     ) -> None:
         self.actions.append(
             PlanAction(
                 operation=operation,
                 resource=resource,
                 description=description,
+                payload=payload,
             )
         )
 
@@ -47,6 +46,9 @@ def create_plan(
             operation="create",
             resource="project",
             description=f"Create Project V2: {title}",
+            payload={
+                "title": title,
+            },
         )
 
     return plan

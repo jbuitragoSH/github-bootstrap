@@ -19,5 +19,11 @@ class Executor:
     ) -> None:
         """Execute the synchronization plan."""
 
+        viewer = self.client.viewer()
+
         for action in plan.actions:
-            print(action.description)
+            if action.operation == "create" and action.resource == "project":
+                self.client.create_project(
+                    owner_id=viewer["id"],
+                    title=action.payload["title"],
+                )

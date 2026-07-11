@@ -1,6 +1,7 @@
 """Plan actions."""
 
 from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -10,3 +11,4 @@ class PlanAction:
     operation: str
     resource: str
     description: str
+    payload: dict[str, Any]

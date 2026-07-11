@@ -6,6 +6,7 @@ from typing import Annotated, Any
 import typer
 
 from github_bootstrap import __version__
+from github_bootstrap.executor.executor import Executor
 from github_bootstrap.github.client import (
     GitHubClient,
     GitHubError,
@@ -123,4 +124,7 @@ def sync(
 
         return
 
-    typer.echo("Execution is not implemented yet.")
+    executor = Executor(client)
+    executor.execute(plan)
+
+    typer.echo("Synchronization complete.")

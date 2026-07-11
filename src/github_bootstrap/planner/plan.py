@@ -3,16 +3,8 @@
 from dataclasses import dataclass, field
 
 from github_bootstrap.github.state import ProjectState
+from github_bootstrap.planner.actions import PlanAction
 from github_bootstrap.specification.models import ProjectSpecification
-
-
-@dataclass(frozen=True)
-class PlanAction:
-    """Represents a synchronization action."""
-
-    operation: str
-    resource: str
-    description: str
 
 
 @dataclass
@@ -21,9 +13,19 @@ class Plan:
 
     actions: list[PlanAction] = field(default_factory=list)
 
-    def add(self, action: PlanAction) -> None:
-        """Add an action to the plan."""
-        self.actions.append(action)
+    def add(
+        self,
+        operation: str,
+        resource: str,
+        description: str,
+    ) -> None:
+        self.actions.append(
+            PlanAction(
+                operation=operation,
+                resource=resource,
+                description=description,
+            )
+        )
 
     def is_empty(self) -> bool:
         """Return True when no actions exist."""
@@ -41,6 +43,10 @@ def create_plan(
     title = specification.project.title
 
     if not state.exists:
-        plan.add(PlanAction("CREATE", "Project", f"Create Project V2: {title}"))
+        plan.add(
+            operation="create",
+            resource="project",
+            description=f"Create Project V2: {title}",
+        )
 
     return plan

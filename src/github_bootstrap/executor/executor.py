@@ -20,4 +20,4 @@ class Executor:
         """Execute the synchronization plan."""
 
         for action in plan.actions:
-            print(action)
+            print(action.description)

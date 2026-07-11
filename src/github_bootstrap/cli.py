@@ -120,7 +120,7 @@ def sync(
         typer.echo("Synchronization plan:")
 
         for action in plan.actions:
-            typer.echo(f"+ {action}")
+            typer.echo(f"+ {action.description}")
 
         return
 

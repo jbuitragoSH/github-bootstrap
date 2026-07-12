@@ -162,6 +162,8 @@ def sync(
     context = ExecutionContext(
         owner_id=viewer["id"],
         repository_id=repository.id,
+        owner=project_specification.organization,
+        repository=project_specification.repository,
     )
 
     executor = Executor(client)

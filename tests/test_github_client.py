@@ -149,3 +149,67 @@ def test_find_project_missing(mock_post: Mock) -> None:
     project = client.projects.find("Bootstrap")
 
     assert project.exists is False
+
+
+@patch("github_bootstrap.github.client.httpx.request")
+def test_execute_rest_returns_data(mock_request: Mock) -> None:
+    """execute_rest() returns REST response data."""
+
+    mock_request.return_value = make_response(
+        201,
+        {
+            "node_id": "milestone-id",
+            "number": 1,
+            "title": "Sprint 1",
+        },
+    )
+
+    client = GitHubClient(token="token")
+
+    data = client.execute_rest(
+        "POST",
+        "/repos/org/repo/milestones",
+        {
+            "title": "Sprint 1",
+        },
+    )
+
+    assert data["title"] == "Sprint 1"
+
+    mock_request.assert_called_once_with(
+        "POST",
+        "https://api.github.com/repos/org/repo/milestones",
+        headers={
+            "Accept": "application/vnd.github+json",
+            "Authorization": "Bearer token",
+            "X-GitHub-Api-Version": "2026-03-10",
+        },
+        json={
+            "title": "Sprint 1",
+        },
+        timeout=10.0,
+    )
+
+
+@patch("github_bootstrap.github.client.httpx.request")
+def test_execute_rest_http_error(mock_request: Mock) -> None:
+    """REST HTTP errors raise GitHubError."""
+
+    mock_request.return_value = make_response(
+        422,
+        {},
+    )
+
+    client = GitHubClient(token="token")
+
+    with pytest.raises(
+        GitHubError,
+        match="GitHub request failed: 422",
+    ):
+        client.execute_rest(
+            "POST",
+            "/repos/org/repo/milestones",
+            {
+                "title": "Sprint 1",
+            },
+        )

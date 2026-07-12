@@ -1,4 +1,4 @@
-"""GitHub GraphQL client."""
+"""GitHub API client."""
 
 import os
 from typing import Any
@@ -13,9 +13,11 @@ from github_bootstrap.github.repositories import RepositoriesAPI
 
 
 class GitHubClient:
-    """Minimal GitHub GraphQL client."""
+    """GitHub GraphQL and REST API client."""
 
     API_URL = "https://api.github.com/graphql"
+    REST_API_URL = "https://api.github.com"
+    REST_API_VERSION = "2026-03-10"
 
     def __init__(self, token: str | None = None) -> None:
         self.token = token or os.getenv("GITHUB_TOKEN")
@@ -57,6 +59,36 @@ class GitHubClient:
             raise GitHubError(messages)
 
         data = payload.get("data")
+
+        if not isinstance(data, dict):
+            raise GitHubError("Invalid response from GitHub API.")
+
+        return data
+
+    def execute_rest(
+        self,
+        method: str,
+        path: str,
+        payload: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Execute a GitHub REST API operation."""
+
+        response = httpx.request(
+            method,
+            f"{self.REST_API_URL}{path}",
+            headers={
+                "Accept": "application/vnd.github+json",
+                "Authorization": f"Bearer {self.token}",
+                "X-GitHub-Api-Version": self.REST_API_VERSION,
+            },
+            json=payload,
+            timeout=10.0,
+        )
+
+        if not 200 <= response.status_code < 300:
+            raise GitHubError(f"GitHub request failed: {response.status_code}")
+
+        data: Any = response.json()
 
         if not isinstance(data, dict):
             raise GitHubError("Invalid response from GitHub API.")

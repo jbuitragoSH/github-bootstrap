@@ -9,3 +9,5 @@ class ExecutionContext:
 
     owner_id: str
     repository_id: str
+    owner: str
+    repository: str

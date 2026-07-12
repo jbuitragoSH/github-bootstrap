@@ -12,6 +12,8 @@ def test_execute_label_create_action() -> None:
     context = ExecutionContext(
         owner_id="owner-id",
         repository_id="repository-id",
+        owner="org",
+        repository="repo",
     )
 
     action = PlanAction(
@@ -46,6 +48,8 @@ def test_execute_label_action_ignores_unsupported_operation() -> None:
     context = ExecutionContext(
         owner_id="owner-id",
         repository_id="repository-id",
+        owner="org",
+        repository="repo",
     )
 
     action = PlanAction(

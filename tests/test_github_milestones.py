@@ -1,3 +1,4 @@
+from datetime import date
 from unittest.mock import MagicMock
 
 import pytest
@@ -96,3 +97,65 @@ def test_find_raises_error_for_invalid_repository_response() -> None:
             owner="org",
             repository="repo",
         )
+
+
+def test_create_repository_milestone() -> None:
+    client = MagicMock()
+
+    client.execute_rest.return_value = {
+        "node_id": "milestone-node-id",
+        "number": 1,
+        "title": "Sprint 1",
+    }
+
+    api = MilestonesAPI(client)
+
+    milestone = api.create(
+        owner="org",
+        repository="repo",
+        title="Sprint 1",
+        description="Foundation capabilities",
+        due_on=date(2026, 7, 31),
+    )
+
+    client.execute_rest.assert_called_once_with(
+        "POST",
+        "/repos/org/repo/milestones",
+        {
+            "title": "Sprint 1",
+            "description": "Foundation capabilities",
+            "due_on": "2026-07-31T23:59:59Z",
+        },
+    )
+
+    assert milestone.id == "milestone-node-id"
+    assert milestone.number == 1
+    assert milestone.title == "Sprint 1"
+
+
+def test_create_repository_milestone_without_optional_fields() -> None:
+    client = MagicMock()
+
+    client.execute_rest.return_value = {
+        "node_id": "milestone-node-id",
+        "number": 1,
+        "title": "Sprint 1",
+    }
+
+    api = MilestonesAPI(client)
+
+    api.create(
+        owner="org",
+        repository="repo",
+        title="Sprint 1",
+    )
+
+    client.execute_rest.assert_called_once_with(
+        "POST",
+        "/repos/org/repo/milestones",
+        {
+            "title": "Sprint 1",
+            "description": None,
+            "due_on": None,
+        },
+    )

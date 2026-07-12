@@ -6,6 +6,7 @@ from typing import Annotated, Any
 import typer
 
 from github_bootstrap import __version__
+from github_bootstrap.executor.context import ExecutionContext
 from github_bootstrap.executor.executor import Executor
 from github_bootstrap.github.client import GitHubClient
 from github_bootstrap.github.exceptions import GitHubError
@@ -140,7 +141,27 @@ def sync(
 
         return
 
+    try:
+        viewer = client.viewer()
+
+        repository = client.repositories.find(
+            owner=project_specification.organization,
+            repository=project_specification.repository,
+        )
+
+    except GitHubError as error:
+        typer.echo(f"Error: {error}")
+        raise typer.Exit(code=1) from error
+
+    context = ExecutionContext(
+        owner_id=viewer["id"],
+        repository_id=repository.id,
+    )
+
     executor = Executor(client)
-    executor.execute(plan)
+    executor.execute(
+        plan,
+        context,
+    )
 
     typer.echo("Synchronization complete.")

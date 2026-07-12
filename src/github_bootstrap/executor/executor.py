@@ -1,5 +1,6 @@
 """Execute synchronization plans."""
 
+from github_bootstrap.executor.context import ExecutionContext
 from github_bootstrap.executor.registry import EXECUTORS
 from github_bootstrap.github.client import GitHubClient
 from github_bootstrap.planner.plan import Plan
@@ -17,12 +18,9 @@ class Executor:
     def execute(
         self,
         plan: Plan,
+        context: ExecutionContext,
     ) -> None:
         """Execute the synchronization plan."""
-
-        viewer = self.client.viewer()
-
-        owner_id = viewer["id"]
 
         for action in plan.actions:
             executor = EXECUTORS.get(action.resource)
@@ -32,6 +30,6 @@ class Executor:
 
             executor(
                 self.client,
-                owner_id,
+                context,
                 action,
             )

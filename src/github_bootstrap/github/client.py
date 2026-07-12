@@ -7,6 +7,7 @@ import httpx
 
 from github_bootstrap.github.exceptions import GitHubError
 from github_bootstrap.github.labels import LabelsAPI
+from github_bootstrap.github.milestones import MilestonesAPI
 from github_bootstrap.github.projects import ProjectsAPI
 from github_bootstrap.github.repositories import RepositoriesAPI
 
@@ -21,6 +22,7 @@ class GitHubClient:
 
         self.projects = ProjectsAPI(self)
         self.labels = LabelsAPI(self)
+        self.milestones = MilestonesAPI(self)
         self.repositories = RepositoriesAPI(self)
 
         if not self.token:

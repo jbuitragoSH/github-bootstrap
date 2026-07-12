@@ -11,7 +11,6 @@ from github_bootstrap.executor.executor import Executor
 from github_bootstrap.github.client import GitHubClient
 from github_bootstrap.github.exceptions import GitHubError
 from github_bootstrap.github.github_state import GitHubState
-from github_bootstrap.github.milestone_state import MilestoneState
 from github_bootstrap.planner.plan import create_plan
 from github_bootstrap.specification.loader import (
     SpecificationError,
@@ -121,12 +120,15 @@ def sync(
             repository=project_specification.repository,
         )
 
+        milestone_state = client.milestones.find(
+            owner=project_specification.organization,
+            repository=project_specification.repository,
+        )
+
         github_state = GitHubState(
             project=project_state,
             labels=label_state,
-            milestones=MilestoneState(
-                milestones=set(),
-            ),
+            milestones=milestone_state,
         )
 
     except GitHubError as error:

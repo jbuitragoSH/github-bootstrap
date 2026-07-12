@@ -3,3 +3,16 @@ repository: github-bootstrap
 
 project:
   title: GitHub Bootstrap Development
+
+labels:
+  - name: bug
+    color: d73a4a
+    description: Something isn't working
+
+  - name: documentation
+    color: 0075ca
+    description: Documentation improvements
+
+  - name: enhancement
+    color: a2eeef
+    description: New feature

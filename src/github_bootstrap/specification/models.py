@@ -23,6 +23,40 @@ class Milestone:
 
 
 @dataclass(frozen=True)
+class Field:
+    """Base GitHub Project field configuration."""
+
+    name: str
+
+
+@dataclass(frozen=True)
+class TextField(Field):
+    """GitHub Project text field configuration."""
+
+
+@dataclass(frozen=True)
+class NumberField(Field):
+    """GitHub Project number field configuration."""
+
+
+@dataclass(frozen=True)
+class DateField(Field):
+    """GitHub Project date field configuration."""
+
+
+@dataclass(frozen=True)
+class SingleSelectField(Field):
+    """GitHub Project single-select field configuration."""
+
+    options: list[str] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
+class IterationField(Field):
+    """GitHub Project iteration field configuration."""
+
+
+@dataclass(frozen=True)
 class Project:
     """GitHub Project configuration."""
 
@@ -38,3 +72,4 @@ class ProjectSpecification:
     project: Project
     labels: list[Label] = field(default_factory=list)
     milestones: list[Milestone] = field(default_factory=list)
+    fields: list[Field] = field(default_factory=list)

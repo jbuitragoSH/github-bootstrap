@@ -1,9 +1,14 @@
 from datetime import date
 
 from github_bootstrap.specification.models import (
+    DateField,
+    IterationField,
     Milestone,
+    NumberField,
     Project,
     ProjectSpecification,
+    SingleSelectField,
+    TextField,
 )
 
 
@@ -54,3 +59,97 @@ def test_project_specification_has_empty_milestones_by_default() -> None:
     )
 
     assert specification.milestones == []
+
+
+def test_create_text_field() -> None:
+    project_field = TextField(
+        name="Component",
+    )
+
+    assert project_field.name == "Component"
+
+
+def test_create_number_field() -> None:
+    project_field = NumberField(
+        name="Story Points",
+    )
+
+    assert project_field.name == "Story Points"
+
+
+def test_create_date_field() -> None:
+    project_field = DateField(
+        name="Due Date",
+    )
+
+    assert project_field.name == "Due Date"
+
+
+def test_create_single_select_field() -> None:
+    project_field = SingleSelectField(
+        name="Priority",
+        options=[
+            "Low",
+            "Medium",
+            "High",
+        ],
+    )
+
+    assert project_field.name == "Priority"
+    assert project_field.options == [
+        "Low",
+        "Medium",
+        "High",
+    ]
+
+
+def test_single_select_field_has_empty_options_by_default() -> None:
+    project_field = SingleSelectField(
+        name="Priority",
+    )
+
+    assert project_field.options == []
+
+
+def test_create_iteration_field() -> None:
+    project_field = IterationField(
+        name="Iteration",
+    )
+
+    assert project_field.name == "Iteration"
+
+
+def test_project_specification_contains_fields() -> None:
+    fields = [
+        TextField(name="Component"),
+        NumberField(name="Story Points"),
+        DateField(name="Due Date"),
+        SingleSelectField(
+            name="Priority",
+            options=[
+                "Low",
+                "Medium",
+                "High",
+            ],
+        ),
+        IterationField(name="Iteration"),
+    ]
+
+    specification = ProjectSpecification(
+        organization="org",
+        repository="repo",
+        project=Project(title="Project"),
+        fields=fields,
+    )
+
+    assert specification.fields == fields
+
+
+def test_project_specification_has_empty_fields_by_default() -> None:
+    specification = ProjectSpecification(
+        organization="org",
+        repository="repo",
+        project=Project(title="Project"),
+    )
+
+    assert specification.fields == []

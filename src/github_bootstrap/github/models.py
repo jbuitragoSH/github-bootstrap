@@ -25,3 +25,12 @@ class GitHubLabel:
 
     id: str
     name: str
+
+
+@dataclass(frozen=True)
+class GitHubMilestone:
+    """GitHub repository milestone."""
+
+    id: str
+    title: str
+    number: int

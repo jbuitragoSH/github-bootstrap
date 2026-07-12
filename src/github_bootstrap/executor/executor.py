@@ -1,5 +1,6 @@
 """Execute synchronization plans."""
 
+from github_bootstrap.executor.registry import EXECUTORS
 from github_bootstrap.github.client import GitHubClient
 from github_bootstrap.planner.plan import Plan
 
@@ -21,9 +22,16 @@ class Executor:
 
         viewer = self.client.viewer()
 
+        owner_id = viewer["id"]
+
         for action in plan.actions:
-            if action.operation == "create" and action.resource == "project":
-                self.client.projects.create(
-                    owner_id=viewer["id"],
-                    title=action.payload["title"],
-                )
+            executor = EXECUTORS.get(action.resource)
+
+            if executor is None:
+                continue
+
+            executor(
+                self.client,
+                owner_id,
+                action,
+            )

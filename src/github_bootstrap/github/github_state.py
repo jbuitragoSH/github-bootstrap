@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 
 from github_bootstrap.github.label_state import LabelState
+from github_bootstrap.github.milestone_state import MilestoneState
 from github_bootstrap.github.state import ProjectState
 
 
@@ -12,3 +13,4 @@ class GitHubState:
 
     project: ProjectState
     labels: LabelState
+    milestones: MilestoneState

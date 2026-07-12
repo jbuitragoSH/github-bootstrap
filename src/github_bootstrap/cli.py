@@ -9,11 +9,13 @@ from github_bootstrap import __version__
 from github_bootstrap.executor.executor import Executor
 from github_bootstrap.github.client import GitHubClient
 from github_bootstrap.github.exceptions import GitHubError
+from github_bootstrap.github.github_state import GitHubState
 from github_bootstrap.planner.plan import create_plan
 from github_bootstrap.specification.loader import (
     SpecificationError,
     load_specification,
 )
+from github_bootstrap.specification.parser import parse_specification
 from github_bootstrap.specification.validator import (
     SpecificationValidationError,
     validate_specification,
@@ -93,9 +95,13 @@ def sync(
 
     specification_file = Path(".github-project.yaml")
 
+    client = GitHubClient()
+
     try:
         specification = load_specification(specification_file)
-        project_specification = validate_specification(specification)
+        validated_specification = validate_specification(specification)
+        project_specification = parse_specification(validated_specification)
+
     except (
         SpecificationError,
         SpecificationValidationError,
@@ -104,17 +110,27 @@ def sync(
         raise typer.Exit(code=1) from error
 
     try:
-        client = GitHubClient()
-        project = client.projects.find(
+        project_state = client.projects.find(
             project_specification.project.title,
         )
+
+        label_state = client.labels.find(
+            owner=project_specification.organization,
+            repository=project_specification.repository,
+        )
+
+        github_state = GitHubState(
+            project=project_state,
+            labels=label_state,
+        )
+
     except GitHubError as error:
         typer.echo(f"Error: {error}")
         raise typer.Exit(code=1) from error
 
     plan = create_plan(
         project_specification,
-        project,
+        github_state,
     )
     if dry_run:
         typer.echo("Synchronization plan:")

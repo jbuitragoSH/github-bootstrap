@@ -1,6 +1,15 @@
 """Specification models."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
+
+@dataclass(frozen=True)
+class Label:
+    """GitHub label configuration."""
+
+    name: str
+    color: str
+    description: str | None = None
 
 
 @dataclass(frozen=True)
@@ -17,3 +26,4 @@ class ProjectSpecification:
     organization: str
     repository: str
     project: Project
+    labels: list[Label] = field(default_factory=list)

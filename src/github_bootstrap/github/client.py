@@ -6,6 +6,7 @@ from typing import Any
 import httpx
 
 from github_bootstrap.github.exceptions import GitHubError
+from github_bootstrap.github.labels import LabelsAPI
 from github_bootstrap.github.projects import ProjectsAPI
 
 
@@ -17,6 +18,7 @@ class GitHubClient:
     def __init__(self, token: str | None = None) -> None:
         self.token = token or os.getenv("GITHUB_TOKEN")
         self.projects: ProjectsAPI = ProjectsAPI(self)
+        self.labels: LabelsAPI = LabelsAPI(self)
         if not self.token:
             raise GitHubError("GITHUB_TOKEN environment variable is required.")
 

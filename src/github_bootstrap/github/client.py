@@ -8,6 +8,7 @@ import httpx
 from github_bootstrap.github.exceptions import GitHubError
 from github_bootstrap.github.labels import LabelsAPI
 from github_bootstrap.github.projects import ProjectsAPI
+from github_bootstrap.github.repositories import RepositoriesAPI
 
 
 class GitHubClient:
@@ -17,8 +18,11 @@ class GitHubClient:
 
     def __init__(self, token: str | None = None) -> None:
         self.token = token or os.getenv("GITHUB_TOKEN")
-        self.projects: ProjectsAPI = ProjectsAPI(self)
-        self.labels: LabelsAPI = LabelsAPI(self)
+
+        self.projects = ProjectsAPI(self)
+        self.labels = LabelsAPI(self)
+        self.repositories = RepositoriesAPI(self)
+
         if not self.token:
             raise GitHubError("GITHUB_TOKEN environment variable is required.")
 
@@ -59,12 +63,13 @@ class GitHubClient:
 
     def viewer(self) -> dict[str, Any]:
         """Return authenticated GitHub user information."""
+
         query = """
         query {
-        viewer {
+          viewer {
             id
             login
-        }
+          }
         }
         """
 

@@ -28,7 +28,14 @@ def validate_specification(
         if field not in specification:
             raise SpecificationValidationError(f"Missing required field: {field}")
 
-    project = specification["project"]
+    _validate_project(specification["project"])
+    _validate_milestones(specification.get("milestones", []))
+
+    return specification
+
+
+def _validate_project(project: Any) -> None:
+    """Validate project configuration."""
 
     if not isinstance(project, dict):
         raise SpecificationValidationError("Field 'project' must be a mapping.")
@@ -36,4 +43,20 @@ def validate_specification(
     if "title" not in project:
         raise SpecificationValidationError("Missing required field: project.title")
 
-    return specification
+
+def _validate_milestones(milestones: Any) -> None:
+    """Validate milestone configurations."""
+
+    if not isinstance(milestones, list):
+        raise SpecificationValidationError("Field 'milestones' must be a list.")
+
+    for index, milestone in enumerate(milestones):
+        if not isinstance(milestone, dict):
+            raise SpecificationValidationError(
+                f"Field 'milestones[{index}]' must be a mapping."
+            )
+
+        if "title" not in milestone:
+            raise SpecificationValidationError(
+                f"Missing required field: milestones[{index}].title"
+            )

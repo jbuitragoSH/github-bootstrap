@@ -68,3 +68,35 @@ def test_execute_single_select_field_create_action() -> None:
         data_type="SINGLE_SELECT",
         options=["Low", "Medium", "High"],
     )
+
+
+def test_execute_iteration_field_create_action() -> None:
+    client = MagicMock()
+    client.fields = MagicMock()
+
+    context = ExecutionContext(
+        owner_id="owner-id",
+        repository_id="repo-id",
+        owner="org",
+        repository="repo",
+        project_id="project-id",
+    )
+
+    action = PlanAction(
+        operation="create",
+        resource="field",
+        description="Create iteration field 'Sprint'",
+        payload={
+            "name": "Sprint",
+            "data_type": "ITERATION",
+        },
+    )
+
+    execute_field_action(client, context, action)
+
+    client.fields.create.assert_called_once_with(
+        project_id="project-id",
+        name="Sprint",
+        data_type="ITERATION",
+        options=None,
+    )

@@ -165,3 +165,28 @@ def test_create_single_select_field_calls_execute() -> None:
             "description": "",
         },
     ]
+
+
+def test_create_iteration_field_calls_execute() -> None:
+    client = MagicMock()
+
+    api = FieldsAPI(client)
+
+    api.create(
+        project_id="project-id",
+        name="Sprint",
+        data_type="ITERATION",
+    )
+
+    client.execute.assert_called_once()
+
+    query, variables = client.execute.call_args[0]
+
+    assert "ITERATION" in query
+    assert "iterationConfiguration" in query
+
+    assert variables["name"] == "Sprint"
+    assert "iterations" in variables["configuration"]
+
+    assert variables["configuration"]["iterations"]["duration"] == 14
+    assert "startDate" in variables["configuration"]["iterations"]

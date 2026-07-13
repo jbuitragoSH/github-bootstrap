@@ -1,5 +1,3 @@
-"""Execution context."""
-
 from dataclasses import dataclass
 
 
@@ -11,3 +9,4 @@ class ExecutionContext:
     repository_id: str
     owner: str
     repository: str
+    project_id: str | None = None

@@ -9,3 +9,4 @@ class ProjectState:
 
     exists: bool
     title: str | None = None
+    id: str | None = None

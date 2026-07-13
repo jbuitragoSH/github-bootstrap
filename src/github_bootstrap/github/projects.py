@@ -29,6 +29,7 @@ class ProjectsAPI:
           viewer {
             projectsV2(first: 100) {
               nodes {
+                id
                 title
               }
             }
@@ -50,11 +51,13 @@ class ProjectsAPI:
                 return ProjectState(
                     exists=True,
                     title=title,
+                    id=project.get("id"),
                 )
 
         return ProjectState(
             exists=False,
             title=title,
+            id=None,
         )
 
     def create(

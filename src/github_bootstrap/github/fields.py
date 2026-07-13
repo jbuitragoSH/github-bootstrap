@@ -67,3 +67,41 @@ class FieldsAPI:
         return FieldState(
             fields=set(),
         )
+
+    def create(
+        self,
+        project_id: str,
+        name: str,
+        data_type: str,
+    ) -> None:
+        """Create a project field."""
+
+        mutation = """
+        mutation(
+          $projectId: ID!,
+          $name: String!,
+          $dataType: ProjectV2FieldType!
+        ) {
+          createProjectV2Field(
+            input: {
+              projectId: $projectId
+              name: $name
+              dataType: $dataType
+            }
+          ) {
+            projectV2Field {
+              id
+              name
+            }
+          }
+        }
+        """
+
+        self.client.execute(
+            mutation,
+            {
+                "projectId": project_id,
+                "name": name,
+                "dataType": data_type,
+            },
+        )

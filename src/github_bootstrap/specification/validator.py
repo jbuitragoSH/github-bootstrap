@@ -30,6 +30,7 @@ def validate_specification(
 
     _validate_project(specification["project"])
     _validate_milestones(specification.get("milestones", []))
+    _validate_fields(specification.get("fields", []))
 
     return specification
 
@@ -59,4 +60,68 @@ def _validate_milestones(milestones: Any) -> None:
         if "title" not in milestone:
             raise SpecificationValidationError(
                 f"Missing required field: milestones[{index}].title"
+            )
+
+
+def _validate_fields(fields: Any) -> None:
+    """Validate project field configurations."""
+
+    if not isinstance(fields, list):
+        raise SpecificationValidationError("Field 'fields' must be a list.")
+
+    supported_types = {
+        "text",
+        "number",
+        "date",
+        "single_select",
+        "iteration",
+    }
+
+    for index, project_field in enumerate(fields):
+        if not isinstance(project_field, dict):
+            raise SpecificationValidationError(
+                f"Field 'fields[{index}]' must be a mapping."
+            )
+
+        if "name" not in project_field:
+            raise SpecificationValidationError(
+                f"Missing required field: fields[{index}].name"
+            )
+
+        if "type" not in project_field:
+            raise SpecificationValidationError(
+                f"Missing required field: fields[{index}].type"
+            )
+
+        field_type = project_field["type"]
+
+        if field_type not in supported_types:
+            raise SpecificationValidationError(
+                f"Unsupported field type: fields[{index}].type={field_type!r}"
+            )
+
+        if field_type == "single_select":
+            _validate_single_select_options(
+                project_field.get("options", []),
+                index,
+            )
+
+
+def _validate_single_select_options(
+    options: Any,
+    field_index: int,
+) -> None:
+    """Validate single-select field options."""
+
+    if not isinstance(options, list):
+        raise SpecificationValidationError(
+            f"Field 'fields[{field_index}].options' must be a list."
+        )
+
+    for option_index, option in enumerate(options):
+        if not isinstance(option, str):
+            raise SpecificationValidationError(
+                "Field "
+                f"'fields[{field_index}].options[{option_index}]' "
+                "must be a string."
             )

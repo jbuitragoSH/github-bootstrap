@@ -6,33 +6,38 @@ from github_bootstrap.specification.validator import (
 )
 
 
-def test_valid_specification() -> None:
+def test_valid_specification_with_fields() -> None:
     specification = {
         "organization": "org",
         "repository": "repo",
         "project": {
             "title": "Project",
         },
-    }
-
-    validate_specification(specification)
-
-
-def test_valid_specification_with_milestones() -> None:
-    specification = {
-        "organization": "org",
-        "repository": "repo",
-        "project": {
-            "title": "Project",
-        },
-        "milestones": [
+        "fields": [
             {
-                "title": "Sprint 1",
-                "description": "Foundation capabilities",
-                "due_on": "2026-07-31",
+                "name": "Component",
+                "type": "text",
             },
             {
-                "title": "Sprint 2",
+                "name": "Story Points",
+                "type": "number",
+            },
+            {
+                "name": "Due Date",
+                "type": "date",
+            },
+            {
+                "name": "Priority",
+                "type": "single_select",
+                "options": [
+                    "Low",
+                    "Medium",
+                    "High",
+                ],
+            },
+            {
+                "name": "Sprint",
+                "type": "iteration",
             },
         ],
     }
@@ -42,75 +47,156 @@ def test_valid_specification_with_milestones() -> None:
     assert result == specification
 
 
-def test_missing_required_field() -> None:
-    specification = {
-        "repository": "repo",
-        "project": {
-            "title": "Project",
-        },
-    }
-
-    with pytest.raises(
-        SpecificationValidationError,
-        match="Missing required field: organization",
-    ):
-        validate_specification(specification)
-
-
-def test_milestones_must_be_a_list() -> None:
+def test_fields_must_be_a_list() -> None:
     specification = {
         "organization": "org",
         "repository": "repo",
         "project": {
             "title": "Project",
         },
-        "milestones": {
-            "title": "Sprint 1",
+        "fields": {
+            "name": "Component",
+            "type": "text",
         },
     }
 
     with pytest.raises(
         SpecificationValidationError,
-        match=r"Field 'milestones' must be a list\.",
+        match=r"Field 'fields' must be a list\.",
     ):
         validate_specification(specification)
 
 
-def test_milestone_must_be_a_mapping() -> None:
+def test_field_must_be_a_mapping() -> None:
     specification = {
         "organization": "org",
         "repository": "repo",
         "project": {
             "title": "Project",
         },
-        "milestones": [
-            "Sprint 1",
+        "fields": [
+            "Component",
         ],
     }
 
     with pytest.raises(
         SpecificationValidationError,
-        match=r"Field 'milestones\[0\]' must be a mapping\.",
+        match=r"Field 'fields\[0\]' must be a mapping\.",
     ):
         validate_specification(specification)
 
 
-def test_milestone_requires_title() -> None:
+def test_field_requires_name() -> None:
     specification = {
         "organization": "org",
         "repository": "repo",
         "project": {
             "title": "Project",
         },
-        "milestones": [
+        "fields": [
             {
-                "description": "Foundation capabilities",
+                "type": "text",
             },
         ],
     }
 
     with pytest.raises(
         SpecificationValidationError,
-        match=r"Missing required field: milestones\[0\]\.title",
+        match=r"Missing required field: fields\[0\]\.name",
+    ):
+        validate_specification(specification)
+
+
+def test_field_requires_type() -> None:
+    specification = {
+        "organization": "org",
+        "repository": "repo",
+        "project": {
+            "title": "Project",
+        },
+        "fields": [
+            {
+                "name": "Component",
+            },
+        ],
+    }
+
+    with pytest.raises(
+        SpecificationValidationError,
+        match=r"Missing required field: fields\[0\]\.type",
+    ):
+        validate_specification(specification)
+
+
+def test_field_type_must_be_supported() -> None:
+    specification = {
+        "organization": "org",
+        "repository": "repo",
+        "project": {
+            "title": "Project",
+        },
+        "fields": [
+            {
+                "name": "Component",
+                "type": "unsupported",
+            },
+        ],
+    }
+
+    with pytest.raises(
+        SpecificationValidationError,
+        match=r"Unsupported field type: fields\[0\]\.type='unsupported'",
+    ):
+        validate_specification(specification)
+
+
+def test_single_select_options_must_be_a_list() -> None:
+    specification = {
+        "organization": "org",
+        "repository": "repo",
+        "project": {
+            "title": "Project",
+        },
+        "fields": [
+            {
+                "name": "Priority",
+                "type": "single_select",
+                "options": "Low",
+            },
+        ],
+    }
+
+    with pytest.raises(
+        SpecificationValidationError,
+        match=r"Field 'fields\[0\]\.options' must be a list\.",
+    ):
+        validate_specification(specification)
+
+
+def test_single_select_options_must_be_strings() -> None:
+    specification = {
+        "organization": "org",
+        "repository": "repo",
+        "project": {
+            "title": "Project",
+        },
+        "fields": [
+            {
+                "name": "Priority",
+                "type": "single_select",
+                "options": [
+                    "Low",
+                    2,
+                ],
+            },
+        ],
+    }
+
+    with pytest.raises(
+        SpecificationValidationError,
+        match=(
+            r"Field 'fields\[0\]\.options\[1\]' "
+            r"must be a string\."
+        ),
     ):
         validate_specification(specification)

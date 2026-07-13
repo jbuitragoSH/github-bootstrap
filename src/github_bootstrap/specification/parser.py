@@ -4,10 +4,16 @@ from datetime import date
 from typing import Any
 
 from github_bootstrap.specification.models import (
+    DateField,
+    Field,
+    IterationField,
     Label,
     Milestone,
+    NumberField,
     Project,
     ProjectSpecification,
+    SingleSelectField,
+    TextField,
 )
 
 
@@ -22,6 +28,7 @@ def parse_specification(
         project=_parse_project(specification),
         labels=_parse_labels(specification),
         milestones=_parse_milestones(specification),
+        fields=_parse_fields(specification),
     )
 
 
@@ -69,6 +76,45 @@ def _parse_milestones(
         )
         for milestone in milestones
     ]
+
+
+def _parse_fields(
+    specification: dict[str, Any],
+) -> list[Field]:
+    """Parse project field definitions."""
+
+    fields = specification.get("fields", [])
+
+    return [_parse_field(project_field) for project_field in fields]
+
+
+def _parse_field(
+    project_field: dict[str, Any],
+) -> Field:
+    """Parse a project field according to its type."""
+
+    field_type = project_field["type"]
+    name = project_field["name"]
+
+    if field_type == "text":
+        return TextField(name=name)
+
+    if field_type == "number":
+        return NumberField(name=name)
+
+    if field_type == "date":
+        return DateField(name=name)
+
+    if field_type == "single_select":
+        return SingleSelectField(
+            name=name,
+            options=project_field.get("options", []),
+        )
+
+    if field_type == "iteration":
+        return IterationField(name=name)
+
+    raise ValueError(f"Unsupported field type: {field_type}")
 
 
 def _parse_optional_date(value: object) -> date | None:

@@ -1,5 +1,6 @@
 from datetime import date
 
+from github_bootstrap.github.field_state import FieldState
 from github_bootstrap.github.github_state import GitHubState
 from github_bootstrap.github.label_state import LabelState
 from github_bootstrap.github.milestone_state import MilestoneState
@@ -104,6 +105,9 @@ def test_create_plan_includes_missing_milestones() -> None:
         ),
         milestones=MilestoneState(
             milestones=set(),
+        ),
+        fields=FieldState(
+            fields=set(),
         ),
     )
 

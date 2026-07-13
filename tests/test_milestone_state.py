@@ -1,3 +1,4 @@
+from github_bootstrap.github.field_state import FieldState
 from github_bootstrap.github.github_state import GitHubState
 from github_bootstrap.github.label_state import LabelState
 from github_bootstrap.github.milestone_state import MilestoneState
@@ -29,9 +30,12 @@ def test_github_state_contains_milestone_state() -> None:
             title="Project",
         ),
         labels=LabelState(
-            labels={"bug"},
+            labels=set(),
         ),
         milestones=milestone_state,
+        fields=FieldState(
+            fields=set(),
+        ),
     )
 
     assert state.milestones is milestone_state

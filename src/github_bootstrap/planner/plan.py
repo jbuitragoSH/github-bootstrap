@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 
 from github_bootstrap.github.github_state import GitHubState
 from github_bootstrap.planner.actions import PlanAction
+from github_bootstrap.planner.fields import plan_fields
 from github_bootstrap.planner.labels import plan_labels
 from github_bootstrap.planner.milestones import plan_milestones
 from github_bootstrap.planner.projects import plan_projects
@@ -52,6 +53,13 @@ def create_plan(
         plan_milestones(
             specification,
             state.milestones,
+        )
+    )
+
+    plan.extend(
+        plan_fields(
+            specification,
+            state.fields,
         )
     )
 

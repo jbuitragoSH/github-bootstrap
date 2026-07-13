@@ -135,6 +135,7 @@ def test_create_plan_includes_missing_fields() -> None:
         project=ProjectState(
             exists=True,
             title="Project",
+            id=None,
         ),
         labels=LabelState(
             labels=set(),

@@ -99,6 +99,7 @@ def test_create_plan_includes_missing_milestones() -> None:
         project=ProjectState(
             exists=True,
             title="Project",
+            id=None,
         ),
         labels=LabelState(
             labels=set(),

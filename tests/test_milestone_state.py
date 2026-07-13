@@ -28,6 +28,7 @@ def test_github_state_contains_milestone_state() -> None:
         project=ProjectState(
             exists=True,
             title="Project",
+            id=None,
         ),
         labels=LabelState(
             labels=set(),

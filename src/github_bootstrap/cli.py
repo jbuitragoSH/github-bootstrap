@@ -169,6 +169,7 @@ def sync(
         repository_id=repository.id,
         owner=project_specification.organization,
         repository=project_specification.repository,
+        project_id=project_state.id,
     )
 
     executor = Executor(client)

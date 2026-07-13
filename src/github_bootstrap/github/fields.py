@@ -64,23 +64,65 @@ class FieldsAPI:
                 fields={node["name"] for node in nodes},
             )
 
-        return FieldState(
-            fields=set(),
-        )
+        return FieldState(fields=set())
 
     def create(
         self,
         project_id: str,
         name: str,
         data_type: str,
+        options: list[str] | None = None,
     ) -> None:
         """Create a project field."""
 
+        # 🔴 SINGLE SELECT (special case)
+        if data_type == "SINGLE_SELECT":
+            mutation = """
+            mutation(
+              $projectId: ID!,
+              $name: String!,
+              $options: [ProjectV2SingleSelectFieldOptionInput!]!
+            ) {
+              createProjectV2Field(
+                input: {
+                  projectId: $projectId
+                  name: $name
+                  dataType: SINGLE_SELECT
+                  singleSelectOptions: $options
+                }
+              ) {
+                projectV2Field {
+                  ... on ProjectV2FieldCommon {
+                    id
+                    name
+                  }
+                }
+              }
+            }
+            """
+
+            variables = {
+                "projectId": project_id,
+                "name": name,
+                "options": [
+                    {
+                        "name": option,
+                        "color": "GRAY",
+                        "description": "",
+                    }
+                    for option in (options or [])
+                ],
+            }
+
+            self.client.execute(mutation, variables)
+            return
+
+        # 🟢 BASIC FIELDS
         mutation = """
         mutation(
           $projectId: ID!,
           $name: String!,
-          $dataType: ProjectV2FieldType!
+          $dataType: ProjectV2CustomFieldType!
         ) {
           createProjectV2Field(
             input: {
@@ -90,18 +132,19 @@ class FieldsAPI:
             }
           ) {
             projectV2Field {
-              id
-              name
+              ... on ProjectV2FieldCommon {
+                id
+                name
+              }
             }
           }
         }
         """
 
-        self.client.execute(
-            mutation,
-            {
-                "projectId": project_id,
-                "name": name,
-                "dataType": data_type,
-            },
-        )
+        variables = {
+            "projectId": project_id,
+            "name": name,
+            "dataType": data_type,
+        }
+
+        self.client.execute(mutation, variables)

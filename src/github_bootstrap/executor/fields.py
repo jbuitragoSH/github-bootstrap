@@ -22,4 +22,5 @@ def execute_field_action(
         project_id=context.project_id,
         name=action.payload["name"],
         data_type=action.payload["data_type"],
+        options=action.payload.get("options"),
     )

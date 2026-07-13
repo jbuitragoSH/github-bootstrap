@@ -134,3 +134,34 @@ def test_find_raises_error_for_invalid_viewer_response() -> None:
         api.find(
             project_title="Knowledge Platform",
         )
+
+
+def test_create_single_select_field_calls_execute() -> None:
+    client = MagicMock()
+
+    api = FieldsAPI(client)
+
+    api.create(
+        project_id="project-id",
+        name="Priority",
+        data_type="SINGLE_SELECT",
+        options=["Low", "Medium"],
+    )
+
+    client.execute.assert_called_once()
+
+    args = client.execute.call_args[0]
+
+    assert "SINGLE_SELECT" in args[0]
+    assert args[1]["options"] == [
+        {
+            "name": "Low",
+            "color": "GRAY",
+            "description": "",
+        },
+        {
+            "name": "Medium",
+            "color": "GRAY",
+            "description": "",
+        },
+    ]

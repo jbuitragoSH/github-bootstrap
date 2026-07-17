@@ -108,7 +108,7 @@ def test_create_plan_includes_missing_milestones() -> None:
             milestones=set(),
         ),
         fields=FieldState(
-            fields=set(),
+            fields={},
         ),
     )
 

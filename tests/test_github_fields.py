@@ -4,6 +4,7 @@ import pytest
 
 from github_bootstrap.github.client import GitHubClient
 from github_bootstrap.github.exceptions import GitHubError
+from github_bootstrap.github.field_state import FieldSnapshot
 from github_bootstrap.github.fields import FieldsAPI
 
 
@@ -30,7 +31,9 @@ def test_find_returns_project_fields() -> None:
                         "fields": {
                             "nodes": [
                                 {
+                                    "__typename": "ProjectV2Field",
                                     "name": "Other Field",
+                                    "dataType": "TEXT",
                                 },
                             ],
                         },
@@ -40,13 +43,27 @@ def test_find_returns_project_fields() -> None:
                         "fields": {
                             "nodes": [
                                 {
+                                    "__typename": "ProjectV2Field",
                                     "name": "Title",
+                                    "dataType": "TEXT",
                                 },
                                 {
-                                    "name": "Status",
-                                },
-                                {
+                                    "__typename": "ProjectV2SingleSelectField",
                                     "name": "Priority",
+                                    "dataType": "SINGLE_SELECT",
+                                    "options": [
+                                        {"name": "Low"},
+                                        {"name": "Medium"},
+                                        {"name": "High"},
+                                    ],
+                                },
+                                {
+                                    "__typename": "ProjectV2IterationField",
+                                    "name": "Release Cycle",
+                                    "dataType": "ITERATION",
+                                    "configuration": {
+                                        "iterations": [],
+                                    },
                                 },
                             ],
                         },
@@ -63,9 +80,19 @@ def test_find_returns_project_fields() -> None:
     )
 
     assert state.fields == {
-        "Title",
-        "Status",
-        "Priority",
+        "Title": FieldSnapshot(
+            name="Title",
+            data_type="TEXT",
+        ),
+        "Priority": FieldSnapshot(
+            name="Priority",
+            data_type="SINGLE_SELECT",
+            options=("Low", "Medium", "High"),
+        ),
+        "Release Cycle": FieldSnapshot(
+            name="Release Cycle",
+            data_type="ITERATION",
+        ),
     }
 
     client.execute.assert_called_once()
@@ -95,7 +122,7 @@ def test_find_returns_empty_state_when_project_has_no_fields() -> None:
         project_title="Knowledge Platform",
     )
 
-    assert state.fields == set()
+    assert state.fields == {}
 
 
 def test_find_returns_empty_state_when_project_does_not_exist() -> None:
@@ -115,7 +142,7 @@ def test_find_returns_empty_state_when_project_does_not_exist() -> None:
         project_title="Knowledge Platform",
     )
 
-    assert state.fields == set()
+    assert state.fields == {}
 
 
 def test_find_raises_error_for_invalid_viewer_response() -> None:

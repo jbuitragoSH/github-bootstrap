@@ -1,6 +1,6 @@
 """Plan GitHub Project field synchronization."""
 
-from github_bootstrap.github.field_state import FieldState
+from github_bootstrap.github.field_state import FieldSnapshot, FieldState
 from github_bootstrap.planner.actions import PlanAction
 from github_bootstrap.specification.models import (
     DateField,
@@ -20,15 +20,40 @@ def plan_fields(
     """Generate actions required to synchronize GitHub Project fields."""
 
     actions: list[PlanAction] = []
-    existing_fields = {_normalize(name) for name in state.fields}
 
-    for field in specification.fields:
-        if _normalize(field.name) in existing_fields:
+    existing_fields = {
+        _normalize(name): snapshot for name, snapshot in state.fields.items()
+    }
+
+    for project_field in specification.fields:
+        snapshot = existing_fields.get(_normalize(project_field.name))
+
+        if snapshot is None:
+            actions.append(
+                _plan_create_field(project_field),
+            )
             continue
 
-        actions.append(
-            _plan_create_field(field),
+        drift_reason = _detect_field_drift(
+            project_field,
+            snapshot,
         )
+
+        if drift_reason is not None:
+            actions.append(
+                PlanAction(
+                    operation="drift",
+                    resource="field",
+                    description=(
+                        f"Field '{project_field.name}' exists with drift: "
+                        f"{drift_reason}"
+                    ),
+                    payload={
+                        "name": project_field.name,
+                        "reason": drift_reason,
+                    },
+                )
+            )
 
     return actions
 
@@ -96,5 +121,51 @@ def _create_field_action(
     )
 
 
+def _detect_field_drift(
+    project_field: Field,
+    snapshot: FieldSnapshot,
+) -> str | None:
+    """Detect drift between specification and current GitHub field."""
+
+    expected_type = _expected_data_type(project_field)
+
+    if snapshot.data_type != expected_type:
+        return "type differs"
+
+    if isinstance(project_field, SingleSelectField):
+        expected_options = tuple(_normalize(option) for option in project_field.options)
+        actual_options = tuple(_normalize(option) for option in snapshot.options)
+
+        if actual_options != expected_options:
+            return "options differ"
+
+    return None
+
+
+def _expected_data_type(
+    project_field: Field,
+) -> str:
+    """Return the expected GitHub field data type."""
+
+    if isinstance(project_field, TextField):
+        return "TEXT"
+
+    if isinstance(project_field, NumberField):
+        return "NUMBER"
+
+    if isinstance(project_field, DateField):
+        return "DATE"
+
+    if isinstance(project_field, SingleSelectField):
+        return "SINGLE_SELECT"
+
+    if isinstance(project_field, IterationField):
+        return "ITERATION"
+
+    raise TypeError(f"Unsupported field specification: {type(project_field).__name__}")
+
+
 def _normalize(name: str) -> str:
+    """Normalize field names for case-insensitive comparisons."""
+
     return name.strip().lower()

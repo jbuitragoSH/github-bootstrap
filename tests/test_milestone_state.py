@@ -35,7 +35,7 @@ def test_github_state_contains_milestone_state() -> None:
         ),
         milestones=milestone_state,
         fields=FieldState(
-            fields=set(),
+            fields={},
         ),
     )
 

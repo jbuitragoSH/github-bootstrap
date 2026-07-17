@@ -1,4 +1,4 @@
-from github_bootstrap.github.field_state import FieldState
+from github_bootstrap.github.field_state import FieldSnapshot, FieldState
 from github_bootstrap.github.github_state import GitHubState
 from github_bootstrap.github.label_state import LabelState
 from github_bootstrap.github.milestone_state import MilestoneState
@@ -47,8 +47,14 @@ def test_plan_fields_creates_missing_fields() -> None:
 
     state = FieldState(
         fields={
-            "Component",
-            "Story Points",
+            "Component": FieldSnapshot(
+                name="Component",
+                data_type="TEXT",
+            ),
+            "Story Points": FieldSnapshot(
+                name="Story Points",
+                data_type="NUMBER",
+            ),
         },
     )
 
@@ -106,8 +112,14 @@ def test_plan_fields_returns_no_actions_when_all_fields_exist() -> None:
 
     state = FieldState(
         fields={
-            "Component",
-            "Story Points",
+            "Component": FieldSnapshot(
+                name="Component",
+                data_type="TEXT",
+            ),
+            "Story Points": FieldSnapshot(
+                name="Story Points",
+                data_type="NUMBER",
+            ),
         },
     )
 
@@ -144,7 +156,7 @@ def test_create_plan_includes_missing_fields() -> None:
             milestones=set(),
         ),
         fields=FieldState(
-            fields=set(),
+            fields={},
         ),
     )
 
@@ -181,7 +193,13 @@ def test_plan_fields_skips_existing_fields() -> None:
     )
 
     state = FieldState(
-        fields={"Status"},
+        fields={
+            "Status": FieldSnapshot(
+                name="Status",
+                data_type="SINGLE_SELECT",
+                options=("Todo", "Done"),
+            ),
+        },
     )
 
     actions = plan_fields(specification, state)
@@ -204,9 +222,80 @@ def test_plan_fields_is_case_insensitive() -> None:
     )
 
     state = FieldState(
-        fields={"Status"},
+        fields={
+            "Status": FieldSnapshot(
+                name="Status",
+                data_type="SINGLE_SELECT",
+                options=("Todo", "Done"),
+            ),
+        },
     )
 
     actions = plan_fields(specification, state)
 
     assert len(actions) == 0
+
+
+def test_plan_fields_detects_type_drift() -> None:
+    specification = ProjectSpecification(
+        organization="org",
+        repository="repo",
+        project=Project(title="Project"),
+        fields=[
+            NumberField(
+                name="Priority",
+            ),
+        ],
+    )
+
+    state = FieldState(
+        fields={
+            "Priority": FieldSnapshot(
+                name="Priority",
+                data_type="SINGLE_SELECT",
+                options=("Low", "Medium", "High"),
+            ),
+        },
+    )
+
+    actions = plan_fields(specification, state)
+
+    assert len(actions) == 1
+    assert actions[0].operation == "drift"
+    assert actions[0].resource == "field"
+    assert actions[0].description == (
+        "Field 'Priority' exists with drift: type differs"
+    )
+
+
+def test_plan_fields_detects_single_select_option_drift() -> None:
+    specification = ProjectSpecification(
+        organization="org",
+        repository="repo",
+        project=Project(title="Project"),
+        fields=[
+            SingleSelectField(
+                name="Priority",
+                options=["Low", "Medium", "High"],
+            ),
+        ],
+    )
+
+    state = FieldState(
+        fields={
+            "Priority": FieldSnapshot(
+                name="Priority",
+                data_type="SINGLE_SELECT",
+                options=("Low", "High"),
+            ),
+        },
+    )
+
+    actions = plan_fields(specification, state)
+
+    assert len(actions) == 1
+    assert actions[0].operation == "drift"
+    assert actions[0].resource == "field"
+    assert actions[0].description == (
+        "Field 'Priority' exists with drift: options differ"
+    )

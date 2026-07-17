@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any
 
 from github_bootstrap.github.exceptions import GitHubError
-from github_bootstrap.github.field_state import FieldState
+from github_bootstrap.github.field_state import FieldSnapshot, FieldState
 
 if TYPE_CHECKING:
     from github_bootstrap.github.client import GitHubClient
@@ -35,8 +35,28 @@ class FieldsAPI:
                 title
                 fields(first: 100) {
                   nodes {
-                    ... on ProjectV2FieldCommon {
+                    __typename
+                    ... on ProjectV2Field {
                       name
+                      dataType
+                    }
+                    ... on ProjectV2SingleSelectField {
+                      name
+                      dataType
+                      options {
+                        name
+                      }
+                    }
+                    ... on ProjectV2IterationField {
+                      name
+                      dataType
+                      configuration {
+                        iterations {
+                          title
+                          startDate
+                          duration
+                        }
+                      }
                     }
                   }
                 }
@@ -62,10 +82,10 @@ class FieldsAPI:
             nodes = project["fields"]["nodes"]
 
             return FieldState(
-                fields={node["name"] for node in nodes},
+                fields={node["name"]: _to_field_snapshot(node) for node in nodes},
             )
 
-        return FieldState(fields=set())
+        return FieldState(fields={})
 
     def create(
         self,
@@ -123,28 +143,28 @@ class FieldsAPI:
         # ITERATION
         if data_type == "ITERATION":
             mutation = """
-          mutation(
-            $projectId: ID!,
-            $name: String!,
-            $configuration: ProjectV2IterationFieldConfigurationInput!
-          ) {
-            createProjectV2Field(
-              input: {
-                projectId: $projectId
-                name: $name
-                dataType: ITERATION
-                iterationConfiguration: $configuration
-              }
+            mutation(
+              $projectId: ID!,
+              $name: String!,
+              $configuration: ProjectV2IterationFieldConfigurationInput!
             ) {
-              projectV2Field {
-                ... on ProjectV2IterationField {
-                  id
-                  name
+              createProjectV2Field(
+                input: {
+                  projectId: $projectId
+                  name: $name
+                  dataType: ITERATION
+                  iterationConfiguration: $configuration
+                }
+              ) {
+                projectV2Field {
+                  ... on ProjectV2FieldCommon {
+                    id
+                    name
+                  }
                 }
               }
             }
-          }
-          """
+            """
 
             start_date = datetime.now(timezone.utc).date().isoformat()
 
@@ -192,3 +212,23 @@ class FieldsAPI:
         }
 
         self.client.execute(mutation, variables)
+
+
+def _to_field_snapshot(
+    node: dict[str, Any],
+) -> FieldSnapshot:
+    """Convert a GraphQL field node into a field snapshot."""
+
+    typename = node["__typename"]
+
+    if typename == "ProjectV2SingleSelectField":
+        return FieldSnapshot(
+            name=node["name"],
+            data_type=node["dataType"],
+            options=tuple(option["name"] for option in node.get("options", [])),
+        )
+
+    return FieldSnapshot(
+        name=node["name"],
+        data_type=node["dataType"],
+    )

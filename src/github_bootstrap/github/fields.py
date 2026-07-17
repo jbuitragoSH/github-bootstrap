@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from github_bootstrap.github.exceptions import GitHubError
 from github_bootstrap.github.field_state import FieldState
@@ -76,11 +76,9 @@ class FieldsAPI:
     ) -> None:
         """Create a project field."""
 
-        from typing import Any
-
         variables: dict[str, Any]
 
-        # SINGLE SELECT (special case)
+        # SINGLE SELECT
         if data_type == "SINGLE_SELECT":
             mutation = """
             mutation(
@@ -122,7 +120,7 @@ class FieldsAPI:
             self.client.execute(mutation, variables)
             return
 
-        # ITERATION FIELD
+        # ITERATION
         if data_type == "ITERATION":
             mutation = """
             mutation(
@@ -154,12 +152,19 @@ class FieldsAPI:
                 "projectId": project_id,
                 "name": name,
                 "configuration": {
-                    "iterations": {
-                        "duration": 14,
-                        "startDate": start_date,
-                    }
+                    "duration": 14,
+                    "startDate": start_date,
+                    "iterations": [
+                        {
+                            "title": "Sprint 1",
+                            "startDate": start_date,
+                            "duration": 14,
+                        }
+                    ],
                 },
             }
+
+            print("ITERATION VARIABLES:", variables)
 
             self.client.execute(mutation, variables)
             return

@@ -185,8 +185,18 @@ def test_create_iteration_field_calls_execute() -> None:
     assert "ITERATION" in query
     assert "iterationConfiguration" in query
 
+    assert variables["projectId"] == "project-id"
     assert variables["name"] == "Sprint"
-    assert "iterations" in variables["configuration"]
 
-    assert variables["configuration"]["iterations"]["duration"] == 14
-    assert "startDate" in variables["configuration"]["iterations"]
+    configuration = variables["configuration"]
+
+    assert configuration["duration"] == 14
+    assert isinstance(configuration["startDate"], str)
+
+    assert configuration["iterations"] == [
+        {
+            "title": "Sprint 1",
+            "startDate": configuration["startDate"],
+            "duration": 14,
+        }
+    ]

@@ -5,6 +5,7 @@ import pytest
 
 from github_bootstrap.github.client import GitHubClient
 from github_bootstrap.github.exceptions import GitHubError
+from github_bootstrap.github.milestone_state import MilestoneSnapshot
 from github_bootstrap.github.milestones import MilestonesAPI
 
 
@@ -28,9 +29,13 @@ def test_find_returns_open_repository_milestones() -> None:
                 "nodes": [
                     {
                         "title": "Sprint 1",
+                        "description": "Foundation capabilities",
+                        "dueOn": "2026-07-31T00:00:00Z",
                     },
                     {
                         "title": "Sprint 2",
+                        "description": "Advanced features",
+                        "dueOn": "2026-08-31T00:00:00Z",
                     },
                 ],
             },
@@ -44,10 +49,20 @@ def test_find_returns_open_repository_milestones() -> None:
         repository="repo",
     )
 
-    assert state.milestones == {
+    assert set(state.milestones) == {
         "Sprint 1",
         "Sprint 2",
     }
+    assert state.milestones["Sprint 1"] == MilestoneSnapshot(
+        title="Sprint 1",
+        description="Foundation capabilities",
+        due_on=date(2026, 7, 31),
+    )
+    assert state.milestones["Sprint 2"] == MilestoneSnapshot(
+        title="Sprint 2",
+        description="Advanced features",
+        due_on=date(2026, 8, 31),
+    )
 
     client.execute.assert_called_once()
 
@@ -77,7 +92,7 @@ def test_find_returns_empty_state_when_repository_has_no_milestones() -> None:
         repository="repo",
     )
 
-    assert state.milestones == set()
+    assert state.milestones == {}
 
 
 def test_find_raises_error_for_invalid_repository_response() -> None:
@@ -124,7 +139,7 @@ def test_create_repository_milestone() -> None:
         {
             "title": "Sprint 1",
             "description": "Foundation capabilities",
-            "due_on": "2026-07-31T23:59:59Z",
+            "due_on": "2026-07-31",
         },
     )
 

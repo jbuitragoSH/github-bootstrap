@@ -1,4 +1,4 @@
-"""GitHub Milestone operations."""
+"""GitHub milestone operations."""
 
 from __future__ import annotations
 
@@ -6,7 +6,10 @@ from datetime import date
 from typing import TYPE_CHECKING, Any
 
 from github_bootstrap.github.exceptions import GitHubError
-from github_bootstrap.github.milestone_state import MilestoneState
+from github_bootstrap.github.milestone_state import (
+    MilestoneSnapshot,
+    MilestoneState,
+)
 from github_bootstrap.github.models import GitHubMilestone
 
 if TYPE_CHECKING:
@@ -14,7 +17,7 @@ if TYPE_CHECKING:
 
 
 class MilestonesAPI:
-    """Operations for GitHub repository milestones."""
+    """Operations for GitHub milestones."""
 
     def __init__(
         self,
@@ -41,6 +44,8 @@ class MilestonesAPI:
             ) {
               nodes {
                 title
+                description
+                dueOn
               }
             }
           }
@@ -62,10 +67,15 @@ class MilestonesAPI:
 
         nodes = repository_data["milestones"]["nodes"]
 
-        milestones = {node["title"] for node in nodes}
-
         return MilestoneState(
-            milestones=milestones,
+            milestones={
+                node["title"]: MilestoneSnapshot(
+                    title=node["title"],
+                    description=node.get("description") or None,
+                    due_on=_parse_due_on(node.get("dueOn")),
+                )
+                for node in nodes
+            },
         )
 
     def create(
@@ -84,23 +94,36 @@ class MilestonesAPI:
             "due_on": _format_due_on(due_on),
         }
 
-        milestone = self.client.execute_rest(
+        response = self.client.execute_rest(
             "POST",
             f"/repos/{owner}/{repository}/milestones",
             payload,
         )
 
         return GitHubMilestone(
-            id=milestone["node_id"],
-            title=milestone["title"],
-            number=milestone["number"],
+            id=response["node_id"],
+            number=response["number"],
+            title=response["title"],
         )
 
 
-def _format_due_on(value: date | None) -> str | None:
-    """Convert a milestone date to an ISO 8601 UTC timestamp."""
+def _format_due_on(
+    value: date | None,
+) -> str | None:
+    """Format a milestone due date for GitHub REST API."""
 
     if value is None:
         return None
 
-    return f"{value.isoformat()}T23:59:59Z"
+    return value.isoformat()
+
+
+def _parse_due_on(
+    value: str | None,
+) -> date | None:
+    """Parse a GitHub milestone due date."""
+
+    if value is None:
+        return None
+
+    return date.fromisoformat(value[:10])

@@ -123,28 +123,28 @@ class FieldsAPI:
         # ITERATION
         if data_type == "ITERATION":
             mutation = """
-            mutation(
-              $projectId: ID!,
-              $name: String!,
-              $configuration: ProjectV2IterationFieldConfigurationInput!
+          mutation(
+            $projectId: ID!,
+            $name: String!,
+            $configuration: ProjectV2IterationFieldConfigurationInput!
+          ) {
+            createProjectV2Field(
+              input: {
+                projectId: $projectId
+                name: $name
+                dataType: ITERATION
+                iterationConfiguration: $configuration
+              }
             ) {
-              createProjectV2Field(
-                input: {
-                  projectId: $projectId
-                  name: $name
-                  dataType: ITERATION
-                  iterationConfiguration: $configuration
-                }
-              ) {
-                projectV2Field {
-                  ... on ProjectV2FieldCommon {
-                    id
-                    name
-                  }
+              projectV2Field {
+                ... on ProjectV2IterationField {
+                  id
+                  name
                 }
               }
             }
-            """
+          }
+          """
 
             start_date = datetime.now(timezone.utc).date().isoformat()
 
@@ -154,17 +154,9 @@ class FieldsAPI:
                 "configuration": {
                     "duration": 14,
                     "startDate": start_date,
-                    "iterations": [
-                        {
-                            "title": "Sprint 1",
-                            "startDate": start_date,
-                            "duration": 14,
-                        }
-                    ],
+                    "iterations": [],
                 },
             }
-
-            print("ITERATION VARIABLES:", variables)
 
             self.client.execute(mutation, variables)
             return

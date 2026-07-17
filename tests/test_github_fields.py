@@ -192,11 +192,4 @@ def test_create_iteration_field_calls_execute() -> None:
 
     assert configuration["duration"] == 14
     assert isinstance(configuration["startDate"], str)
-
-    assert configuration["iterations"] == [
-        {
-            "title": "Sprint 1",
-            "startDate": configuration["startDate"],
-            "duration": 14,
-        }
-    ]
+    assert configuration["iterations"] == []

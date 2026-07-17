@@ -12,8 +12,11 @@ def execute_label_action(
 ) -> None:
     """Execute a label action."""
 
-    if action.operation != "create":
+    if action.operation == "drift":
         return
+
+    if action.operation != "create":
+        raise ValueError(f"Unsupported label action operation: {action.operation}")
 
     client.labels.create(
         repository_id=context.repository_id,

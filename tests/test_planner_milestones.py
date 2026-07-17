@@ -114,7 +114,7 @@ def test_create_plan_includes_missing_milestones() -> None:
             id=None,
         ),
         labels=LabelState(
-            labels=set(),
+            labels={},
         ),
         milestones=MilestoneState(
             milestones={},

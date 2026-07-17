@@ -49,7 +49,7 @@ def test_github_state_contains_milestone_state() -> None:
             id=None,
         ),
         labels=LabelState(
-            labels=set(),
+            labels={},
         ),
         milestones=milestone_state,
         fields=FieldState(

@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from github_bootstrap.github.exceptions import GitHubError
-from github_bootstrap.github.label_state import LabelState
+from github_bootstrap.github.label_state import LabelSnapshot, LabelState
 from github_bootstrap.github.models import GitHubLabel
 
 if TYPE_CHECKING:
@@ -36,8 +36,9 @@ class LabelsAPI:
           ) {
             labels(first: 100) {
               nodes {
-                id
                 name
+                color
+                description
               }
             }
           }
@@ -59,10 +60,15 @@ class LabelsAPI:
 
         nodes = repository_data["labels"]["nodes"]
 
-        labels = {node["name"] for node in nodes}
-
         return LabelState(
-            labels=labels,
+            labels={
+                node["name"]: LabelSnapshot(
+                    name=node["name"],
+                    color=node["color"],
+                    description=node.get("description") or None,
+                )
+                for node in nodes
+            },
         )
 
     def create(

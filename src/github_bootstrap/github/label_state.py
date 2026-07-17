@@ -1,8 +1,19 @@
-from dataclasses import dataclass
+"""GitHub label state."""
+
+from dataclasses import dataclass, field
+
+
+@dataclass(frozen=True)
+class LabelSnapshot:
+    """Current GitHub label configuration."""
+
+    name: str
+    color: str
+    description: str | None = None
 
 
 @dataclass(frozen=True)
 class LabelState:
-    """Repository labels."""
+    """Current GitHub labels."""
 
-    labels: set[str]
+    labels: dict[str, LabelSnapshot] = field(default_factory=dict)

@@ -150,7 +150,7 @@ def test_create_plan_includes_missing_fields() -> None:
             id=None,
         ),
         labels=LabelState(
-            labels=set(),
+            labels={},
         ),
         milestones=MilestoneState(
             milestones={},

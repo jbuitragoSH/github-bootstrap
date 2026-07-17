@@ -1,5 +1,7 @@
 from unittest.mock import MagicMock
 
+import pytest
+
 from github_bootstrap.executor.context import ExecutionContext
 from github_bootstrap.executor.labels import execute_label_action
 from github_bootstrap.planner.actions import PlanAction
@@ -41,7 +43,7 @@ def test_execute_label_create_action() -> None:
     )
 
 
-def test_execute_label_action_ignores_unsupported_operation() -> None:
+def test_execute_label_action_rejects_unknown_operations() -> None:
     client = MagicMock()
     client.labels = MagicMock()
 
@@ -63,10 +65,14 @@ def test_execute_label_action_ignores_unsupported_operation() -> None:
         },
     )
 
-    execute_label_action(
-        client,
-        context,
-        action,
-    )
+    with pytest.raises(
+        ValueError,
+        match="Unsupported label action operation: update",
+    ):
+        execute_label_action(
+            client,
+            context,
+            action,
+        )
 
     client.labels.create.assert_not_called()

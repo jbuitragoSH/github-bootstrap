@@ -20,13 +20,14 @@ def plan_fields(
     """Generate actions required to synchronize GitHub Project fields."""
 
     actions: list[PlanAction] = []
+    existing_fields = {_normalize(name) for name in state.fields}
 
-    for project_field in specification.fields:
-        if project_field.name in state.fields:
+    for field in specification.fields:
+        if _normalize(field.name) in existing_fields:
             continue
 
         actions.append(
-            _plan_create_field(project_field),
+            _plan_create_field(field),
         )
 
     return actions
@@ -93,3 +94,7 @@ def _create_field_action(
             "data_type": data_type,
         },
     )
+
+
+def _normalize(name: str) -> str:
+    return name.strip().lower()

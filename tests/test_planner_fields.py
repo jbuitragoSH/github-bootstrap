@@ -161,3 +161,52 @@ def test_create_plan_includes_missing_fields() -> None:
         "name": "Component",
         "data_type": "TEXT",
     }
+
+
+def test_plan_fields_skips_existing_fields() -> None:
+    specification = ProjectSpecification(
+        organization="org",
+        repository="repo",
+        project=Project(title="Project"),
+        fields=[
+            SingleSelectField(
+                name="Status",
+                options=["Todo", "Done"],
+            ),
+            SingleSelectField(
+                name="Priority",
+                options=["Low", "Medium", "High"],
+            ),
+        ],
+    )
+
+    state = FieldState(
+        fields={"Status"},
+    )
+
+    actions = plan_fields(specification, state)
+
+    assert len(actions) == 1
+    assert actions[0].payload["name"] == "Priority"
+
+
+def test_plan_fields_is_case_insensitive() -> None:
+    specification = ProjectSpecification(
+        organization="org",
+        repository="repo",
+        project=Project(title="Project"),
+        fields=[
+            SingleSelectField(
+                name="status",
+                options=["Todo", "Done"],
+            ),
+        ],
+    )
+
+    state = FieldState(
+        fields={"Status"},
+    )
+
+    actions = plan_fields(specification, state)
+
+    assert len(actions) == 0

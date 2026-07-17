@@ -144,12 +144,37 @@ def sync(
         project_specification,
         github_state,
     )
+
+    executable_actions = plan.executable_actions()
+    drift_actions = plan.drift_actions()
+
+    if plan.is_empty():
+        typer.echo("Everything is up to date.")
+        return
+
     if dry_run:
-        typer.echo("Synchronization plan:")
+        if executable_actions:
+            typer.echo("Synchronization plan:")
 
-        for action in plan.actions:
-            typer.echo(f"+ {action.description}")
+            for action in executable_actions:
+                typer.echo(f"+ {action.description}")
 
+        if drift_actions:
+            typer.echo("Drift detected:")
+
+            for action in drift_actions:
+                typer.echo(f"! {action.description}")
+
+        return
+
+    if not executable_actions:
+        if drift_actions:
+            typer.echo("Drift detected:")
+
+            for action in drift_actions:
+                typer.echo(f"! {action.description}")
+
+        typer.echo("No executable actions to apply.")
         return
 
     try:

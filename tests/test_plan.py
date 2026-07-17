@@ -97,3 +97,32 @@ def test_plan_without_drift_returns_false() -> None:
     )
 
     assert plan.has_drift() is False
+
+
+def test_plan_returns_executable_actions_without_drift() -> None:
+    plan = Plan(
+        actions=[
+            PlanAction(
+                operation="create",
+                resource="field",
+                description="Create field",
+                payload={
+                    "name": "Priority",
+                },
+            ),
+            PlanAction(
+                operation="drift",
+                resource="field",
+                description="Field 'Priority' exists with drift",
+                payload={
+                    "name": "Priority",
+                    "reason": "options differ",
+                },
+            ),
+        ],
+    )
+
+    executable_actions = plan.executable_actions()
+
+    assert len(executable_actions) == 1
+    assert executable_actions[0].operation == "create"

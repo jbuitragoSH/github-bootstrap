@@ -10,6 +10,7 @@ from github_bootstrap.github.field_state import (
     FieldOptionSnapshot,
     FieldSnapshot,
     FieldState,
+    IterationSnapshot,
 )
 
 if TYPE_CHECKING:
@@ -60,6 +61,7 @@ class FieldsAPI:
                       dataType
                       configuration {
                         iterations {
+                          id
                           title
                           startDate
                           duration
@@ -237,6 +239,22 @@ def _to_field_snapshot(
                     name=option["name"],
                 )
                 for option in node.get("options", [])
+            ),
+        )
+
+    if typename == "ProjectV2IterationField":
+        configuration = node.get("configuration", {})
+
+        return FieldSnapshot(
+            id=node["id"],
+            name=node["name"],
+            data_type=node["dataType"],
+            iterations=tuple(
+                IterationSnapshot(
+                    id=iteration["id"],
+                    title=iteration["title"],
+                )
+                for iteration in configuration.get("iterations", [])
             ),
         )
 

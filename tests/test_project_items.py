@@ -68,3 +68,18 @@ def test_set_date_field() -> None:
     )
 
     client.execute.assert_called_once()
+
+
+def test_set_iteration_field() -> None:
+    client = MagicMock()
+
+    api = ProjectItemsAPI(client)
+
+    api.set_iteration_field(
+        project_id="project-id",
+        item_id="item-id",
+        field_id="field-id",
+        iteration_id="iteration-id",
+    )
+
+    client.execute.assert_called_once()

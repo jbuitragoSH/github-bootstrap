@@ -240,3 +240,46 @@ class ProjectItemsAPI:
                 "value": value,
             },
         )
+
+    def set_iteration_field(
+        self,
+        project_id: str,
+        item_id: str,
+        field_id: str,
+        iteration_id: str,
+    ) -> None:
+        """Set an iteration field value on a Project V2 item."""
+
+        mutation = """
+        mutation(
+          $projectId: ID!,
+          $itemId: ID!,
+          $fieldId: ID!,
+          $iterationId: String!
+        ) {
+          updateProjectV2ItemFieldValue(
+            input: {
+              projectId: $projectId
+              itemId: $itemId
+              fieldId: $fieldId
+              value: {
+                iterationId: $iterationId
+              }
+            }
+          ) {
+            projectV2Item {
+              id
+            }
+          }
+        }
+        """
+
+        self.client.execute(
+            mutation,
+            {
+                "projectId": project_id,
+                "itemId": item_id,
+                "fieldId": field_id,
+                "iterationId": iteration_id,
+            },
+        )

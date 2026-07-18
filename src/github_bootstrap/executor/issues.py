@@ -111,3 +111,28 @@ def execute_issue_action(
             )
 
             continue
+
+        if field_snapshot.data_type == "ITERATION":
+            if not isinstance(value, str):
+                continue
+
+            iteration_snapshot = next(
+                (
+                    iteration
+                    for iteration in field_snapshot.iterations
+                    if iteration.title == value
+                ),
+                None,
+            )
+
+            if iteration_snapshot is None:
+                continue
+
+            client.project_items.set_iteration_field(
+                project_id=context.project_id,
+                item_id=item_id,
+                field_id=field_snapshot.id,
+                iteration_id=iteration_snapshot.id,
+            )
+
+            continue

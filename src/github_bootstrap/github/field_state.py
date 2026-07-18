@@ -12,6 +12,14 @@ class FieldOptionSnapshot:
 
 
 @dataclass(frozen=True)
+class IterationSnapshot:
+    """Current GitHub iteration option."""
+
+    id: str
+    title: str
+
+
+@dataclass(frozen=True)
 class FieldSnapshot:
     """Current GitHub Project field configuration."""
 
@@ -19,6 +27,7 @@ class FieldSnapshot:
     name: str
     data_type: str
     options: tuple[FieldOptionSnapshot, ...] = ()
+    iterations: tuple[IterationSnapshot, ...] = ()
 
 
 @dataclass(frozen=True)

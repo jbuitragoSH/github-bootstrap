@@ -7,6 +7,7 @@ from github_bootstrap.github.exceptions import GitHubError
 from github_bootstrap.github.field_state import (
     FieldOptionSnapshot,
     FieldSnapshot,
+    IterationSnapshot,
 )
 from github_bootstrap.github.fields import FieldsAPI
 
@@ -78,7 +79,14 @@ def test_find_returns_project_fields() -> None:
                                     "name": "Release Cycle",
                                     "dataType": "ITERATION",
                                     "configuration": {
-                                        "iterations": [],
+                                        "iterations": [
+                                            {
+                                                "id": "iteration-sprint-1",
+                                                "title": "Sprint 1",
+                                                "startDate": "2026-07-17",
+                                                "duration": 14,
+                                            },
+                                        ],
                                     },
                                 },
                             ],
@@ -124,6 +132,12 @@ def test_find_returns_project_fields() -> None:
             id="field-release-cycle",
             name="Release Cycle",
             data_type="ITERATION",
+            iterations=(
+                IterationSnapshot(
+                    id="iteration-sprint-1",
+                    title="Sprint 1",
+                ),
+            ),
         ),
     }
 

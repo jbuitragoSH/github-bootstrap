@@ -46,26 +46,50 @@ def execute_issue_action(
     if context.field_state is None:
         raise ValueError("Field state is required to configure issue fields.")
 
-    for field_name, option_name in issue_fields.items():
+    for field_name, value in issue_fields.items():
         field_snapshot = context.field_state.fields.get(field_name)
 
         if field_snapshot is None:
             continue
 
-        if field_snapshot.data_type != "SINGLE_SELECT":
+        if field_snapshot.data_type == "SINGLE_SELECT":
+            option_snapshot = next(
+                (option for option in field_snapshot.options if option.name == value),
+                None,
+            )
+
+            if option_snapshot is None:
+                continue
+
+            client.project_items.set_single_select_field(
+                project_id=context.project_id,
+                item_id=item_id,
+                field_id=field_snapshot.id,
+                option_id=option_snapshot.id,
+            )
+
             continue
 
-        option_snapshot = next(
-            (option for option in field_snapshot.options if option.name == option_name),
-            None,
-        )
+        if field_snapshot.data_type == "TEXT":
+            if not isinstance(value, str):
+                continue
 
-        if option_snapshot is None:
+            client.project_items.set_text_field(
+                project_id=context.project_id,
+                item_id=item_id,
+                field_id=field_snapshot.id,
+                value=value,
+            )
+
             continue
 
-        client.project_items.set_single_select_field(
-            project_id=context.project_id,
-            item_id=item_id,
-            field_id=field_snapshot.id,
-            option_id=option_snapshot.id,
-        )
+        if field_snapshot.data_type == "NUMBER":
+            if not isinstance(value, int | float):
+                continue
+
+            client.project_items.set_number_field(
+                project_id=context.project_id,
+                item_id=item_id,
+                field_id=field_snapshot.id,
+                value=value,
+            )

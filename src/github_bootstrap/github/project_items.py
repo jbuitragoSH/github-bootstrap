@@ -111,3 +111,89 @@ class ProjectItemsAPI:
                 "optionId": option_id,
             },
         )
+
+    def set_text_field(
+        self,
+        project_id: str,
+        item_id: str,
+        field_id: str,
+        value: str,
+    ) -> None:
+        """Set a text field value on a Project V2 item."""
+
+        mutation = """
+        mutation(
+          $projectId: ID!,
+          $itemId: ID!,
+          $fieldId: ID!,
+          $value: String!
+        ) {
+          updateProjectV2ItemFieldValue(
+            input: {
+              projectId: $projectId
+              itemId: $itemId
+              fieldId: $fieldId
+              value: {
+                text: $value
+              }
+            }
+          ) {
+            projectV2Item {
+              id
+            }
+          }
+        }
+        """
+
+        self.client.execute(
+            mutation,
+            {
+                "projectId": project_id,
+                "itemId": item_id,
+                "fieldId": field_id,
+                "value": value,
+            },
+        )
+
+    def set_number_field(
+        self,
+        project_id: str,
+        item_id: str,
+        field_id: str,
+        value: int | float,
+    ) -> None:
+        """Set a number field value on a Project V2 item."""
+
+        mutation = """
+        mutation(
+          $projectId: ID!,
+          $itemId: ID!,
+          $fieldId: ID!,
+          $value: Float!
+        ) {
+          updateProjectV2ItemFieldValue(
+            input: {
+              projectId: $projectId
+              itemId: $itemId
+              fieldId: $fieldId
+              value: {
+                number: $value
+              }
+            }
+          ) {
+            projectV2Item {
+              id
+            }
+          }
+        }
+        """
+
+        self.client.execute(
+            mutation,
+            {
+                "projectId": project_id,
+                "itemId": item_id,
+                "fieldId": field_id,
+                "value": float(value),
+            },
+        )

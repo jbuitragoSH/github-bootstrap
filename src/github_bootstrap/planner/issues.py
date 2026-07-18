@@ -57,6 +57,30 @@ def plan_issues(
 
             continue
 
+        existing_project_item = project_item_state.items.get(
+            existing_issue.id,
+        )
+
+        if existing_project_item is not None and not issue.fields:
+            continue
+
+        actions.append(
+            PlanAction(
+                operation="sync_project_item",
+                resource="issue",
+                description=f"Synchronize issue '{issue.title}' with project",
+                payload={
+                    "issue_id": existing_issue.id,
+                    "project_item_id": (
+                        existing_project_item.id
+                        if existing_project_item is not None
+                        else None
+                    ),
+                    "fields": issue.fields,
+                },
+            )
+        )
+
         # CASE 2:
         # Issue exists in repository but is not yet in Project V2.
         if existing_issue.id not in project_item_state.items:

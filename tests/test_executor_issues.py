@@ -83,7 +83,7 @@ def test_execute_issue_action_requires_project_id() -> None:
 
     with pytest.raises(
         ValueError,
-        match="Project ID is required to add issues to the project.",
+        match="Project ID is required to synchronize issues with the project.",
     ):
         execute_issue_action(
             client,

@@ -19,51 +19,87 @@ def execute_issue_action(
 ) -> None:
     """Execute an issue action."""
 
-    if action.operation == "add_to_project":
-        if context.project_id is None:
-            raise ValueError("Project ID is required to add issues to the project.")
+    if context.project_id is None:
+        raise ValueError(
+            "Project ID is required to synchronize issues with the project."
+        )
 
-        client.project_items.add(
+    if action.operation == "create":
+        issue = client.issues.create(
+            owner=context.owner,
+            repository=context.repository,
+            title=action.payload["title"],
+            body=action.payload.get("body"),
+            labels=action.payload.get("labels"),
+            milestone=action.payload.get("milestone"),
+        )
+
+        item_id = client.project_items.add(
             project_id=context.project_id,
-            content_id=action.payload["issue_id"],
+            content_id=issue.id,
+        )
+
+        _configure_fields(
+            client=client,
+            context=context,
+            item_id=item_id,
+            issue_fields=action.payload.get("fields", {}),
         )
 
         return
 
-    if action.operation != "create":
+    if action.operation == "sync_project_item":
+        if context.project_id is None:
+            raise ValueError("Project ID is required to synchronize issue fields.")
+
+        project_item_id = action.payload.get("project_item_id")
+
+        if isinstance(project_item_id, str):
+            item_id = project_item_id
+        else:
+            issue_id = action.payload.get("issue_id")
+
+            if not isinstance(issue_id, str):
+                raise ValueError(
+                    "Issue ID is required to add the issue to the project."
+                )
+
+            item_id = client.project_items.add(
+                project_id=context.project_id,
+                content_id=issue_id,
+            )
+
+        issue_fields = action.payload.get("fields", {})
+
+        if not isinstance(issue_fields, dict):
+            raise ValueError("Issue fields must be a dictionary.")
+
+        _configure_fields(
+            client,
+            context,
+            item_id,
+            issue_fields,
+        )
+
         return
 
-    if context.project_id is None:
-        raise ValueError("Project ID is required to add issues to the project.")
 
-    issue = client.issues.create(
-        owner=context.owner,
-        repository=context.repository,
-        title=action.payload["title"],
-        body=action.payload.get("body"),
-        labels=action.payload.get("labels"),
-        milestone=action.payload.get("milestone"),
-    )
-
-    item_id = client.project_items.add(
-        project_id=context.project_id,
-        content_id=issue.id,
-    )
-
-    issue_fields = action.payload.get("fields", {})
+def _configure_fields(
+    client: GitHubClient,
+    context: ExecutionContext,
+    item_id: str,
+    issue_fields: dict[str, object],
+) -> None:
+    """Configure Project V2 field values for an issue."""
 
     if not issue_fields:
         return
 
+    if context.project_id is None:
+        raise ValueError("Project ID is required to configure issue fields.")
+
     if context.field_state is None:
         raise ValueError("Field state is required to configure issue fields.")
-
-    # Aquí continúa tu lógica actual para configurar:
-    # SINGLE_SELECT
-    # TEXT
-    # NUMBER
-    # DATE
-    # ITERATION
 
     for field_name, value in issue_fields.items():
         field_snapshot = context.field_state.fields.get(field_name)
@@ -72,6 +108,9 @@ def execute_issue_action(
             continue
 
         if field_snapshot.data_type == "SINGLE_SELECT":
+            if not isinstance(value, str):
+                continue
+
             option_snapshot = next(
                 (option for option in field_snapshot.options if option.name == value),
                 None,
@@ -113,6 +152,8 @@ def execute_issue_action(
                 value=value,
             )
 
+            continue
+
         if field_snapshot.data_type == "DATE":
             if isinstance(value, date):
                 date_value = value.isoformat()
@@ -152,5 +193,3 @@ def execute_issue_action(
                 field_id=field_snapshot.id,
                 iteration_id=iteration_snapshot.id,
             )
-
-            continue

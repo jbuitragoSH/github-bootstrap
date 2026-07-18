@@ -10,6 +10,7 @@ from github_bootstrap.github.fields import FieldsAPI
 from github_bootstrap.github.issues import IssuesAPI
 from github_bootstrap.github.labels import LabelsAPI
 from github_bootstrap.github.milestones import MilestonesAPI
+from github_bootstrap.github.project_items import ProjectItemsAPI
 from github_bootstrap.github.projects import ProjectsAPI
 from github_bootstrap.github.repositories import RepositoriesAPI
 
@@ -30,6 +31,7 @@ class GitHubClient:
         self.repositories = RepositoriesAPI(self)
         self.fields = FieldsAPI(self)
         self.issues = IssuesAPI(self)
+        self.project_items = ProjectItemsAPI(self)
         if not self.token:
             raise GitHubError("GITHUB_TOKEN environment variable is required.")
 

@@ -41,6 +41,7 @@ class IssuesAPI:
               states: [OPEN]
             ) {
               nodes {
+                id
                 number
                 title
               }
@@ -66,7 +67,8 @@ class IssuesAPI:
 
         return IssueState(
             issues={
-                node["title"].strip().lower(): IssueSnapshot(
+                node["id"]: IssueSnapshot(
+                    id=node["id"],
                     number=node["number"],
                     title=node["title"],
                 )
@@ -82,7 +84,7 @@ class IssuesAPI:
         body: str | None = None,
         labels: list[str] | None = None,
         milestone: int | None = None,
-    ) -> None:
+    ) -> IssueSnapshot:
         """Create a repository issue."""
 
         payload: dict[str, Any] = {
@@ -94,8 +96,14 @@ class IssuesAPI:
         if milestone is not None:
             payload["milestone"] = milestone
 
-        self.client.execute_rest(
+        response = self.client.execute_rest(
             "POST",
             f"/repos/{owner}/{repository}/issues",
             payload,
+        )
+
+        return IssueSnapshot(
+            id=response["node_id"],
+            number=response["number"],
+            title=response["title"],
         )

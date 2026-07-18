@@ -21,11 +21,19 @@ def execute_issue_action(
     if action.operation != "create":
         return
 
-    client.issues.create(
+    if context.project_id is None:
+        raise ValueError("Project ID is required to add issues to the project.")
+
+    issue = client.issues.create(
         owner=context.owner,
         repository=context.repository,
         title=action.payload["title"],
         body=action.payload.get("body"),
         labels=action.payload.get("labels"),
         milestone=action.payload.get("milestone"),
+    )
+
+    client.project_items.add(
+        project_id=context.project_id,
+        content_id=issue.id,
     )

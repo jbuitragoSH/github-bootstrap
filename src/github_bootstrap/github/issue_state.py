@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 class IssueSnapshot:
     """Current GitHub issue."""
 
+    id: str
     number: int
     title: str
 

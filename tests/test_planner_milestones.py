@@ -2,6 +2,7 @@ from datetime import date
 
 from github_bootstrap.github.field_state import FieldState
 from github_bootstrap.github.github_state import GitHubState
+from github_bootstrap.github.issue_state import IssueState
 from github_bootstrap.github.label_state import LabelState
 from github_bootstrap.github.milestone_state import MilestoneSnapshot, MilestoneState
 from github_bootstrap.github.state import ProjectState
@@ -37,6 +38,7 @@ def test_plan_milestones_creates_missing_milestones() -> None:
         milestones={
             "Sprint 1": MilestoneSnapshot(
                 title="Sprint 1",
+                number=1,
                 description="Foundation capabilities",
                 due_on=date(2026, 7, 31),
             ),
@@ -79,6 +81,7 @@ def test_plan_milestones_returns_no_actions_when_all_exist() -> None:
         milestones={
             "Sprint 1": MilestoneSnapshot(
                 title="Sprint 1",
+                number=1,
                 description="Foundation capabilities",
                 due_on=date(2026, 7, 31),
             ),
@@ -122,6 +125,9 @@ def test_create_plan_includes_missing_milestones() -> None:
         fields=FieldState(
             fields={},
         ),
+        issues=IssueState(
+            issues={},
+        ),
     )
 
     plan = create_plan(
@@ -155,6 +161,7 @@ def test_plan_milestones_detects_description_drift() -> None:
         milestones={
             "Sprint 1": MilestoneSnapshot(
                 title="Sprint 1",
+                number=1,
                 description="Current description",
                 due_on=date(2026, 7, 31),
             ),
@@ -192,6 +199,7 @@ def test_plan_milestones_detects_due_date_drift() -> None:
         milestones={
             "Sprint 1": MilestoneSnapshot(
                 title="Sprint 1",
+                number=1,
                 description="Foundation capabilities",
                 due_on=date(2026, 8, 15),
             ),
@@ -229,6 +237,7 @@ def test_plan_milestones_is_case_insensitive() -> None:
         milestones={
             "Sprint 1": MilestoneSnapshot(
                 title="Sprint 1",
+                number=1,
                 description="Foundation capabilities",
                 due_on=date(2026, 7, 31),
             ),

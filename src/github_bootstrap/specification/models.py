@@ -64,6 +64,14 @@ class Project:
 
 
 @dataclass(frozen=True)
+class Issue:
+    title: str
+    body: str | None = None
+    labels: list[str] = field(default_factory=list)
+    milestone: str | None = None
+
+
+@dataclass(frozen=True)
 class ProjectSpecification:
     """Root project specification."""
 
@@ -73,3 +81,4 @@ class ProjectSpecification:
     labels: list[Label] = field(default_factory=list)
     milestones: list[Milestone] = field(default_factory=list)
     fields: list[Field] = field(default_factory=list)
+    issues: list[Issue] = field(default_factory=list)

@@ -28,11 +28,13 @@ def test_find_returns_open_repository_milestones() -> None:
             "milestones": {
                 "nodes": [
                     {
+                        "number": 1,
                         "title": "Sprint 1",
                         "description": "Foundation capabilities",
                         "dueOn": "2026-07-31T00:00:00Z",
                     },
                     {
+                        "number": 2,
                         "title": "Sprint 2",
                         "description": "Advanced features",
                         "dueOn": "2026-08-31T00:00:00Z",
@@ -53,13 +55,19 @@ def test_find_returns_open_repository_milestones() -> None:
         "Sprint 1",
         "Sprint 2",
     }
+
+    assert state.milestones["Sprint 1"].number == 1
+    assert state.milestones["Sprint 2"].number == 2
+
     assert state.milestones["Sprint 1"] == MilestoneSnapshot(
         title="Sprint 1",
+        number=1,
         description="Foundation capabilities",
         due_on=date(2026, 7, 31),
     )
     assert state.milestones["Sprint 2"] == MilestoneSnapshot(
         title="Sprint 2",
+        number=2,
         description="Advanced features",
         due_on=date(2026, 8, 31),
     )

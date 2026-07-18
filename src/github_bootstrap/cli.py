@@ -128,12 +128,17 @@ def sync(
         field_state = client.fields.find(
             project_title=project_specification.project.title,
         )
+        issue_state = client.issues.find(
+            owner=project_specification.organization,
+            repository=project_specification.repository,
+        )
 
         github_state = GitHubState(
             project=project_state,
             labels=label_state,
             milestones=milestone_state,
             fields=field_state,
+            issues=issue_state,
         )
 
     except GitHubError as error:

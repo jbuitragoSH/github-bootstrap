@@ -1,5 +1,6 @@
 from github_bootstrap.github.field_state import FieldSnapshot, FieldState
 from github_bootstrap.github.github_state import GitHubState
+from github_bootstrap.github.issue_state import IssueState
 from github_bootstrap.github.label_state import LabelState
 from github_bootstrap.github.milestone_state import MilestoneState
 from github_bootstrap.github.state import ProjectState
@@ -157,6 +158,9 @@ def test_create_plan_includes_missing_fields() -> None:
         ),
         fields=FieldState(
             fields={},
+        ),
+        issues=IssueState(
+            issues={},
         ),
     )
 

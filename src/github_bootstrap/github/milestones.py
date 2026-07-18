@@ -43,6 +43,7 @@ class MilestonesAPI:
               states: [OPEN]
             ) {
               nodes {
+                number
                 title
                 description
                 dueOn
@@ -71,6 +72,7 @@ class MilestonesAPI:
             milestones={
                 node["title"]: MilestoneSnapshot(
                     title=node["title"],
+                    number=node["number"],
                     description=node.get("description") or None,
                     due_on=_parse_due_on(node.get("dueOn")),
                 )

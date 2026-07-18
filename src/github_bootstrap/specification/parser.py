@@ -6,6 +6,7 @@ from typing import Any
 from github_bootstrap.specification.models import (
     DateField,
     Field,
+    Issue,
     IterationField,
     Label,
     Milestone,
@@ -29,6 +30,15 @@ def parse_specification(
         labels=_parse_labels(specification),
         milestones=_parse_milestones(specification),
         fields=_parse_fields(specification),
+        issues=[
+            Issue(
+                title=issue["title"],
+                body=issue.get("body"),
+                labels=issue.get("labels", []),
+                milestone=issue.get("milestone"),
+            )
+            for issue in specification.get("issues", [])
+        ],
     )
 
 

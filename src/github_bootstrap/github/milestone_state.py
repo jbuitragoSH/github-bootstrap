@@ -9,6 +9,7 @@ class MilestoneSnapshot:
     """Current GitHub milestone configuration."""
 
     title: str
+    number: int
     description: str | None = None
     due_on: date | None = None
 

@@ -71,7 +71,7 @@ class Issue:
     body: str | None = None
     labels: list[str] = field(default_factory=list)
     milestone: str | None = None
-    fields: dict[str, str] = field(default_factory=dict)
+    fields: dict[str, str | int | float | date] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)

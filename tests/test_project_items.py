@@ -53,3 +53,18 @@ def test_set_number_field() -> None:
     )
 
     client.execute.assert_called_once()
+
+
+def test_set_date_field() -> None:
+    client = MagicMock()
+
+    api = ProjectItemsAPI(client)
+
+    api.set_date_field(
+        project_id="project-id",
+        item_id="item-id",
+        field_id="field-id",
+        value="2026-08-15",
+    )
+
+    client.execute.assert_called_once()

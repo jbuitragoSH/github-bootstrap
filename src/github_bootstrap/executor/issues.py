@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import date
 from typing import TYPE_CHECKING
 
 from github_bootstrap.executor.context import ExecutionContext
@@ -93,3 +94,20 @@ def execute_issue_action(
                 field_id=field_snapshot.id,
                 value=value,
             )
+
+        if field_snapshot.data_type == "DATE":
+            if isinstance(value, date):
+                date_value = value.isoformat()
+            elif isinstance(value, str):
+                date_value = value
+            else:
+                continue
+
+            client.project_items.set_date_field(
+                project_id=context.project_id,
+                item_id=item_id,
+                field_id=field_snapshot.id,
+                value=date_value,
+            )
+
+            continue

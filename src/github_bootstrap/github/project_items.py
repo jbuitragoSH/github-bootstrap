@@ -197,3 +197,46 @@ class ProjectItemsAPI:
                 "value": float(value),
             },
         )
+
+    def set_date_field(
+        self,
+        project_id: str,
+        item_id: str,
+        field_id: str,
+        value: str,
+    ) -> None:
+        """Set a date field value on a Project V2 item."""
+
+        mutation = """
+        mutation(
+          $projectId: ID!,
+          $itemId: ID!,
+          $fieldId: ID!,
+          $value: Date!
+        ) {
+          updateProjectV2ItemFieldValue(
+            input: {
+              projectId: $projectId
+              itemId: $itemId
+              fieldId: $fieldId
+              value: {
+                date: $value
+              }
+            }
+          ) {
+            projectV2Item {
+              id
+            }
+          }
+        }
+        """
+
+        self.client.execute(
+            mutation,
+            {
+                "projectId": project_id,
+                "itemId": item_id,
+                "fieldId": field_id,
+                "value": value,
+            },
+        )

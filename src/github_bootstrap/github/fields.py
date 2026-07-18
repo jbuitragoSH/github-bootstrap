@@ -6,7 +6,11 @@ from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any
 
 from github_bootstrap.github.exceptions import GitHubError
-from github_bootstrap.github.field_state import FieldSnapshot, FieldState
+from github_bootstrap.github.field_state import (
+    FieldOptionSnapshot,
+    FieldSnapshot,
+    FieldState,
+)
 
 if TYPE_CHECKING:
     from github_bootstrap.github.client import GitHubClient
@@ -37,17 +41,21 @@ class FieldsAPI:
                   nodes {
                     __typename
                     ... on ProjectV2Field {
+                      id
                       name
                       dataType
                     }
                     ... on ProjectV2SingleSelectField {
+                      id
                       name
                       dataType
                       options {
+                        id
                         name
                       }
                     }
                     ... on ProjectV2IterationField {
+                      id
                       name
                       dataType
                       configuration {
@@ -98,7 +106,6 @@ class FieldsAPI:
 
         variables: dict[str, Any]
 
-        # SINGLE SELECT
         if data_type == "SINGLE_SELECT":
             mutation = """
             mutation(
@@ -140,7 +147,6 @@ class FieldsAPI:
             self.client.execute(mutation, variables)
             return
 
-        # ITERATION
         if data_type == "ITERATION":
             mutation = """
             mutation(
@@ -181,7 +187,6 @@ class FieldsAPI:
             self.client.execute(mutation, variables)
             return
 
-        # BASIC FIELDS
         mutation = """
         mutation(
           $projectId: ID!,
@@ -223,12 +228,20 @@ def _to_field_snapshot(
 
     if typename == "ProjectV2SingleSelectField":
         return FieldSnapshot(
+            id=node["id"],
             name=node["name"],
             data_type=node["dataType"],
-            options=tuple(option["name"] for option in node.get("options", [])),
+            options=tuple(
+                FieldOptionSnapshot(
+                    id=option["id"],
+                    name=option["name"],
+                )
+                for option in node.get("options", [])
+            ),
         )
 
     return FieldSnapshot(
+        id=node["id"],
         name=node["name"],
         data_type=node["dataType"],
     )

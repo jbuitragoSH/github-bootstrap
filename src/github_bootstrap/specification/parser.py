@@ -36,6 +36,7 @@ def parse_specification(
                 body=issue.get("body"),
                 labels=issue.get("labels", []),
                 milestone=issue.get("milestone"),
+                fields=issue.get("fields", {}),
             )
             for issue in specification.get("issues", [])
         ],

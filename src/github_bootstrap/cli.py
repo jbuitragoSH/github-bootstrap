@@ -200,6 +200,7 @@ def sync(
         owner=project_specification.organization,
         repository=project_specification.repository,
         project_id=project_state.id,
+        field_state=field_state,
     )
 
     executor = Executor(client)

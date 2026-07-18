@@ -65,10 +65,13 @@ class Project:
 
 @dataclass(frozen=True)
 class Issue:
+    """GitHub issue configuration."""
+
     title: str
     body: str | None = None
     labels: list[str] = field(default_factory=list)
     milestone: str | None = None
+    fields: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)

@@ -68,3 +68,46 @@ class ProjectItemsAPI:
             raise GitHubError("Invalid response from GitHub API.")
 
         return item_id
+
+    def set_single_select_field(
+        self,
+        project_id: str,
+        item_id: str,
+        field_id: str,
+        option_id: str,
+    ) -> None:
+        """Set a single-select field value on a Project V2 item."""
+
+        mutation = """
+        mutation(
+          $projectId: ID!,
+          $itemId: ID!,
+          $fieldId: ID!,
+          $optionId: String!
+        ) {
+          updateProjectV2ItemFieldValue(
+            input: {
+              projectId: $projectId
+              itemId: $itemId
+              fieldId: $fieldId
+              value: {
+                singleSelectOptionId: $optionId
+              }
+            }
+          ) {
+            projectV2Item {
+              id
+            }
+          }
+        }
+        """
+
+        self.client.execute(
+            mutation,
+            {
+                "projectId": project_id,
+                "itemId": item_id,
+                "fieldId": field_id,
+                "optionId": option_id,
+            },
+        )

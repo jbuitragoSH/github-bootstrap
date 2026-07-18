@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from github_bootstrap.github.field_state import FieldState
+
 
 @dataclass(frozen=True)
 class ExecutionContext:
@@ -10,3 +12,4 @@ class ExecutionContext:
     owner: str
     repository: str
     project_id: str | None = None
+    field_state: FieldState | None = None

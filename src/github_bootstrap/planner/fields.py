@@ -134,8 +134,7 @@ def _detect_field_drift(
 
     if isinstance(project_field, SingleSelectField):
         expected_options = tuple(_normalize(option) for option in project_field.options)
-        actual_options = tuple(_normalize(option) for option in snapshot.options)
-
+        actual_options = tuple(_normalize(option.name) for option in snapshot.options)
         if actual_options != expected_options:
             return "options differ"
 

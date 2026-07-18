@@ -4,7 +4,10 @@ import pytest
 
 from github_bootstrap.github.client import GitHubClient
 from github_bootstrap.github.exceptions import GitHubError
-from github_bootstrap.github.field_state import FieldSnapshot
+from github_bootstrap.github.field_state import (
+    FieldOptionSnapshot,
+    FieldSnapshot,
+)
 from github_bootstrap.github.fields import FieldsAPI
 
 
@@ -32,6 +35,7 @@ def test_find_returns_project_fields() -> None:
                             "nodes": [
                                 {
                                     "__typename": "ProjectV2Field",
+                                    "id": "other-field",
                                     "name": "Other Field",
                                     "dataType": "TEXT",
                                 },
@@ -44,21 +48,33 @@ def test_find_returns_project_fields() -> None:
                             "nodes": [
                                 {
                                     "__typename": "ProjectV2Field",
+                                    "id": "field-title",
                                     "name": "Title",
                                     "dataType": "TEXT",
                                 },
                                 {
                                     "__typename": "ProjectV2SingleSelectField",
+                                    "id": "field-priority",
                                     "name": "Priority",
                                     "dataType": "SINGLE_SELECT",
                                     "options": [
-                                        {"name": "Low"},
-                                        {"name": "Medium"},
-                                        {"name": "High"},
+                                        {
+                                            "id": "option-low",
+                                            "name": "Low",
+                                        },
+                                        {
+                                            "id": "option-medium",
+                                            "name": "Medium",
+                                        },
+                                        {
+                                            "id": "option-high",
+                                            "name": "High",
+                                        },
                                     ],
                                 },
                                 {
                                     "__typename": "ProjectV2IterationField",
+                                    "id": "field-release-cycle",
                                     "name": "Release Cycle",
                                     "dataType": "ITERATION",
                                     "configuration": {
@@ -81,15 +97,31 @@ def test_find_returns_project_fields() -> None:
 
     assert state.fields == {
         "Title": FieldSnapshot(
+            id="field-title",
             name="Title",
             data_type="TEXT",
         ),
         "Priority": FieldSnapshot(
+            id="field-priority",
             name="Priority",
             data_type="SINGLE_SELECT",
-            options=("Low", "Medium", "High"),
+            options=(
+                FieldOptionSnapshot(
+                    id="option-low",
+                    name="Low",
+                ),
+                FieldOptionSnapshot(
+                    id="option-medium",
+                    name="Medium",
+                ),
+                FieldOptionSnapshot(
+                    id="option-high",
+                    name="High",
+                ),
+            ),
         ),
         "Release Cycle": FieldSnapshot(
+            id="field-release-cycle",
             name="Release Cycle",
             data_type="ITERATION",
         ),

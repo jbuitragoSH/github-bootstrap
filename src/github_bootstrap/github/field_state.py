@@ -4,12 +4,21 @@ from dataclasses import dataclass, field
 
 
 @dataclass(frozen=True)
+class FieldOptionSnapshot:
+    """Current GitHub single-select field option."""
+
+    id: str
+    name: str
+
+
+@dataclass(frozen=True)
 class FieldSnapshot:
     """Current GitHub Project field configuration."""
 
+    id: str
     name: str
     data_type: str
-    options: tuple[str, ...] = ()
+    options: tuple[FieldOptionSnapshot, ...] = ()
 
 
 @dataclass(frozen=True)

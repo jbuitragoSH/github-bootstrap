@@ -48,6 +48,7 @@ def plan_issues(
                     "body": issue.body,
                     "labels": issue.labels,
                     "milestone": milestone_number,
+                    "fields": issue.fields,
                 },
             )
         )

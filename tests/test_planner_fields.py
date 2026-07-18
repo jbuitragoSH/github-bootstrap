@@ -1,4 +1,8 @@
-from github_bootstrap.github.field_state import FieldSnapshot, FieldState
+from github_bootstrap.github.field_state import (
+    FieldOptionSnapshot,
+    FieldSnapshot,
+    FieldState,
+)
 from github_bootstrap.github.github_state import GitHubState
 from github_bootstrap.github.issue_state import IssueState
 from github_bootstrap.github.label_state import LabelState
@@ -49,10 +53,12 @@ def test_plan_fields_creates_missing_fields() -> None:
     state = FieldState(
         fields={
             "Component": FieldSnapshot(
+                id="field-component",
                 name="Component",
                 data_type="TEXT",
             ),
             "Story Points": FieldSnapshot(
+                id="field-story-points",
                 name="Story Points",
                 data_type="NUMBER",
             ),
@@ -114,10 +120,12 @@ def test_plan_fields_returns_no_actions_when_all_fields_exist() -> None:
     state = FieldState(
         fields={
             "Component": FieldSnapshot(
+                id="field-component",
                 name="Component",
                 data_type="TEXT",
             ),
             "Story Points": FieldSnapshot(
+                id="field-story-points",
                 name="Story Points",
                 data_type="NUMBER",
             ),
@@ -199,17 +207,45 @@ def test_plan_fields_skips_existing_fields() -> None:
     state = FieldState(
         fields={
             "Status": FieldSnapshot(
+                id="field-status",
                 name="Status",
                 data_type="SINGLE_SELECT",
-                options=("Todo", "Done"),
+                options=(
+                    FieldOptionSnapshot(
+                        id="option-todo",
+                        name="Todo",
+                    ),
+                    FieldOptionSnapshot(
+                        id="option-done",
+                        name="Done",
+                    ),
+                ),
+            ),
+            "Priority": FieldSnapshot(
+                id="field-priority",
+                name="Priority",
+                data_type="SINGLE_SELECT",
+                options=(
+                    FieldOptionSnapshot(
+                        id="option-low",
+                        name="Low",
+                    ),
+                    FieldOptionSnapshot(
+                        id="option-medium",
+                        name="Medium",
+                    ),
+                    FieldOptionSnapshot(
+                        id="option-high",
+                        name="High",
+                    ),
+                ),
             ),
         },
     )
 
     actions = plan_fields(specification, state)
 
-    assert len(actions) == 1
-    assert actions[0].payload["name"] == "Priority"
+    assert actions == []
 
 
 def test_plan_fields_is_case_insensitive() -> None:
@@ -228,16 +264,26 @@ def test_plan_fields_is_case_insensitive() -> None:
     state = FieldState(
         fields={
             "Status": FieldSnapshot(
+                id="field-status",
                 name="Status",
                 data_type="SINGLE_SELECT",
-                options=("Todo", "Done"),
+                options=(
+                    FieldOptionSnapshot(
+                        id="option-todo",
+                        name="Todo",
+                    ),
+                    FieldOptionSnapshot(
+                        id="option-done",
+                        name="Done",
+                    ),
+                ),
             ),
         },
     )
 
     actions = plan_fields(specification, state)
 
-    assert len(actions) == 0
+    assert actions == []
 
 
 def test_plan_fields_detects_type_drift() -> None:
@@ -255,9 +301,19 @@ def test_plan_fields_detects_type_drift() -> None:
     state = FieldState(
         fields={
             "Priority": FieldSnapshot(
+                id="field-priority",
                 name="Priority",
                 data_type="SINGLE_SELECT",
-                options=("Low", "Medium", "High"),
+                options=(
+                    FieldOptionSnapshot(
+                        id="option-low",
+                        name="Low",
+                    ),
+                    FieldOptionSnapshot(
+                        id="option-high",
+                        name="High",
+                    ),
+                ),
             ),
         },
     )
@@ -288,9 +344,19 @@ def test_plan_fields_detects_single_select_option_drift() -> None:
     state = FieldState(
         fields={
             "Priority": FieldSnapshot(
+                id="field-priority",
                 name="Priority",
                 data_type="SINGLE_SELECT",
-                options=("Low", "High"),
+                options=(
+                    FieldOptionSnapshot(
+                        id="option-low",
+                        name="Low",
+                    ),
+                    FieldOptionSnapshot(
+                        id="option-high",
+                        name="High",
+                    ),
+                ),
             ),
         },
     )

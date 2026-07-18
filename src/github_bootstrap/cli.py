@@ -11,6 +11,9 @@ from github_bootstrap.executor.executor import Executor
 from github_bootstrap.github.client import GitHubClient
 from github_bootstrap.github.exceptions import GitHubError
 from github_bootstrap.github.github_state import GitHubState
+from github_bootstrap.github.project_item_state import (
+    ProjectItemState,
+)
 from github_bootstrap.planner.plan import create_plan
 from github_bootstrap.specification.loader import (
     SpecificationError,
@@ -128,10 +131,20 @@ def sync(
         field_state = client.fields.find(
             project_title=project_specification.project.title,
         )
+
         issue_state = client.issues.find(
             owner=project_specification.organization,
             repository=project_specification.repository,
         )
+
+        if project_state.id is not None:
+            project_item_state = client.project_items.find(
+                project_id=project_state.id,
+            )
+        else:
+            project_item_state = ProjectItemState(
+                items={},
+            )
 
         github_state = GitHubState(
             project=project_state,
@@ -139,6 +152,7 @@ def sync(
             milestones=milestone_state,
             fields=field_state,
             issues=issue_state,
+            project_items=project_item_state,
         )
 
     except GitHubError as error:

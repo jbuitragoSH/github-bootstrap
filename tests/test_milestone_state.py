@@ -8,6 +8,7 @@ from github_bootstrap.github.milestone_state import (
     MilestoneSnapshot,
     MilestoneState,
 )
+from github_bootstrap.github.project_item_state import ProjectItemState
 from github_bootstrap.github.state import ProjectState
 
 
@@ -65,6 +66,9 @@ def test_github_state_contains_milestone_state() -> None:
         ),
         issues=IssueState(
             issues={},
+        ),
+        project_items=ProjectItemState(
+            items={},
         ),
     )
 

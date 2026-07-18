@@ -96,6 +96,7 @@ def create_plan(
             specification,
             state.issues,
             state.milestones,
+            state.project_items,
         )
     )
 

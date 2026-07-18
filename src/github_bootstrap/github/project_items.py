@@ -9,6 +9,11 @@ from github_bootstrap.github.exceptions import GitHubError
 if TYPE_CHECKING:
     from github_bootstrap.github.client import GitHubClient
 
+from github_bootstrap.github.project_item_state import (
+    ProjectItemSnapshot,
+    ProjectItemState,
+)
+
 
 class ProjectItemsAPI:
     """Operations for GitHub Project V2 items."""
@@ -282,4 +287,80 @@ class ProjectItemsAPI:
                 "fieldId": field_id,
                 "iterationId": iteration_id,
             },
+        )
+
+    def find(
+        self,
+        project_id: str,
+    ) -> ProjectItemState:
+        """Load current items from a GitHub Project V2."""
+
+        query = """
+        query($projectId: ID!) {
+          node(id: $projectId) {
+            ... on ProjectV2 {
+              items(first: 100) {
+                nodes {
+                  id
+                  content {
+                    ... on Issue {
+                      id
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        """
+
+        data = self.client.execute(
+            query,
+            {
+                "projectId": project_id,
+            },
+        )
+
+        project = data.get("node")
+
+        if not isinstance(project, dict):
+            raise GitHubError("Invalid response from GitHub API.")
+
+        items_data = project.get("items")
+
+        if not isinstance(items_data, dict):
+            raise GitHubError("Invalid response from GitHub API.")
+
+        nodes = items_data.get("nodes")
+
+        if not isinstance(nodes, list):
+            raise GitHubError("Invalid response from GitHub API.")
+
+        items: dict[str, ProjectItemSnapshot] = {}
+
+        for node in nodes:
+            if not isinstance(node, dict):
+                continue
+
+            item_id = node.get("id")
+            content = node.get("content")
+
+            if not isinstance(item_id, str):
+                continue
+
+            if not isinstance(content, dict):
+                continue
+
+            content_id = content.get("id")
+
+            if not isinstance(content_id, str):
+                continue
+
+            items[content_id] = ProjectItemSnapshot(
+                id=item_id,
+                content_id=content_id,
+            )
+
+        return ProjectItemState(
+            items=items,
         )

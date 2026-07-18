@@ -2,6 +2,7 @@
 
 from github_bootstrap.github.issue_state import IssueState
 from github_bootstrap.github.milestone_state import MilestoneState
+from github_bootstrap.github.project_item_state import ProjectItemState
 from github_bootstrap.planner.actions import PlanAction
 from github_bootstrap.specification.models import ProjectSpecification
 
@@ -10,12 +11,11 @@ def plan_issues(
     specification: ProjectSpecification,
     issue_state: IssueState,
     milestone_state: MilestoneState,
+    project_item_state: ProjectItemState,
 ) -> list[PlanAction]:
-    """Generate actions required to create missing issues."""
+    """Generate actions required to synchronize issues with the project."""
 
     actions: list[PlanAction] = []
-
-    existing_titles = set(issue_state.issues)
 
     milestones = {
         title.strip().lower(): snapshot
@@ -25,32 +25,57 @@ def plan_issues(
     for issue in specification.issues:
         normalized_title = issue.title.strip().lower()
 
-        if normalized_title in existing_titles:
+        existing_issue = issue_state.issues.get(normalized_title)
+
+        # CASE 1:
+        # Issue does not exist in repository -> create it.
+        if existing_issue is None:
+            milestone_number = None
+
+            if issue.milestone is not None:
+                milestone = milestones.get(
+                    issue.milestone.strip().lower(),
+                )
+
+                if milestone is not None:
+                    milestone_number = milestone.number
+
+            actions.append(
+                PlanAction(
+                    operation="create",
+                    resource="issue",
+                    description=f"Create issue '{issue.title}'",
+                    payload={
+                        "title": issue.title,
+                        "body": issue.body,
+                        "labels": issue.labels,
+                        "milestone": milestone_number,
+                        "fields": issue.fields,
+                    },
+                )
+            )
+
             continue
 
-        milestone_number = None
-
-        if issue.milestone is not None:
-            milestone = milestones.get(
-                issue.milestone.strip().lower(),
+        # CASE 2:
+        # Issue exists in repository but is not yet in Project V2.
+        if existing_issue.id not in project_item_state.items:
+            actions.append(
+                PlanAction(
+                    operation="add_to_project",
+                    resource="issue",
+                    description=f"Add issue '{issue.title}' to project",
+                    payload={
+                        "issue_id": existing_issue.id,
+                        "title": existing_issue.title,
+                    },
+                )
             )
 
-            if milestone is not None:
-                milestone_number = milestone.number
+            continue
 
-        actions.append(
-            PlanAction(
-                operation="create",
-                resource="issue",
-                description=f"Create issue '{issue.title}'",
-                payload={
-                    "title": issue.title,
-                    "body": issue.body,
-                    "labels": issue.labels,
-                    "milestone": milestone_number,
-                    "fields": issue.fields,
-                },
-            )
-        )
+        # CASE 3:
+        # Issue exists and is already in the project.
+        # No synchronization action is required.
 
     return actions

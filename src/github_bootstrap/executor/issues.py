@@ -19,6 +19,17 @@ def execute_issue_action(
 ) -> None:
     """Execute an issue action."""
 
+    if action.operation == "add_to_project":
+        if context.project_id is None:
+            raise ValueError("Project ID is required to add issues to the project.")
+
+        client.project_items.add(
+            project_id=context.project_id,
+            content_id=action.payload["issue_id"],
+        )
+
+        return
+
     if action.operation != "create":
         return
 
@@ -46,6 +57,13 @@ def execute_issue_action(
 
     if context.field_state is None:
         raise ValueError("Field state is required to configure issue fields.")
+
+    # Aquí continúa tu lógica actual para configurar:
+    # SINGLE_SELECT
+    # TEXT
+    # NUMBER
+    # DATE
+    # ITERATION
 
     for field_name, value in issue_fields.items():
         field_snapshot = context.field_state.fields.get(field_name)

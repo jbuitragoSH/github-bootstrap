@@ -5,6 +5,7 @@ from github_bootstrap.github.github_state import GitHubState
 from github_bootstrap.github.issue_state import IssueState
 from github_bootstrap.github.label_state import LabelState
 from github_bootstrap.github.milestone_state import MilestoneSnapshot, MilestoneState
+from github_bootstrap.github.project_item_state import ProjectItemState
 from github_bootstrap.github.state import ProjectState
 from github_bootstrap.planner.milestones import plan_milestones
 from github_bootstrap.planner.plan import create_plan
@@ -127,6 +128,9 @@ def test_create_plan_includes_missing_milestones() -> None:
         ),
         issues=IssueState(
             issues={},
+        ),
+        project_items=ProjectItemState(
+            items={},
         ),
     )
 

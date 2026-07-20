@@ -109,15 +109,19 @@ class MilestonesAPI:
         )
 
 
-def _format_due_on(
-    value: date | None,
-) -> str | None:
-    """Format a milestone due date for GitHub REST API."""
+def _format_due_on(due_on: date | str | None) -> str | None:
+    """Format a milestone due date for the GitHub REST API."""
 
-    if value is None:
+    if due_on is None:
         return None
 
-    return value.isoformat()
+    if isinstance(due_on, date):
+        return f"{due_on.isoformat()}T23:59:59Z"
+
+    if "T" not in due_on:
+        return f"{due_on}T23:59:59Z"
+
+    return due_on
 
 
 def _parse_due_on(

@@ -1,5 +1,7 @@
 """Plan GitHub milestone synchronization."""
 
+from datetime import date, datetime
+
 from github_bootstrap.github.milestone_state import (
     MilestoneSnapshot,
     MilestoneState,
@@ -71,14 +73,20 @@ def _detect_milestone_drift(
     milestone: Milestone,
     snapshot: MilestoneSnapshot,
 ) -> str | None:
-    """Detect drift between specification and current GitHub milestone."""
+    """Detect drift between specification and current milestone."""
 
-    if _normalize_optional(snapshot.description) != _normalize_optional(
-        milestone.description,
-    ):
+    if snapshot.description != milestone.description:
         return "description differs"
 
-    if snapshot.due_on != milestone.due_on:
+    expected_due_on = _normalize_due_date(
+        milestone.due_on,
+    )
+
+    actual_due_on = _normalize_due_date(
+        snapshot.due_on,
+    )
+
+    if actual_due_on != expected_due_on:
         return "due date differs"
 
     return None
@@ -106,3 +114,25 @@ def _normalize_optional(
         return None
 
     return normalized
+
+
+def _normalize_due_date(
+    value: date | datetime | str | None,
+) -> date | None:
+    """Normalize milestone due dates for comparison."""
+
+    if value is None:
+        return None
+
+    if isinstance(value, datetime):
+        return value.date()
+
+    if isinstance(value, date):
+        return value
+
+    if isinstance(value, str):
+        return date.fromisoformat(
+            value[:10],
+        )
+
+    raise TypeError("Unsupported milestone due date type.")

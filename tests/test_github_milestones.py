@@ -147,7 +147,7 @@ def test_create_repository_milestone() -> None:
         {
             "title": "Sprint 1",
             "description": "Foundation capabilities",
-            "due_on": "2026-07-31",
+            "due_on": "2026-07-31T23:59:59Z",
         },
     )
 

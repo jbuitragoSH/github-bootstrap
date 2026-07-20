@@ -22,10 +22,15 @@ def plan_issues(
         for title, snapshot in milestone_state.milestones.items()
     }
 
+    existing_issues = {
+        snapshot.title.strip().lower(): snapshot
+        for snapshot in issue_state.issues.values()
+    }
+
     for issue in specification.issues:
         normalized_title = issue.title.strip().lower()
 
-        existing_issue = issue_state.issues.get(normalized_title)
+        existing_issue = existing_issues.get(normalized_title)
 
         # CASE 1:
         # Issue does not exist in repository -> create it.
@@ -57,6 +62,8 @@ def plan_issues(
 
             continue
 
+        # CASE 2:
+        # Issue exists. Synchronize its Project Item and fields.
         existing_project_item = project_item_state.items.get(
             existing_issue.id,
         )
@@ -80,26 +87,5 @@ def plan_issues(
                 },
             )
         )
-
-        # CASE 2:
-        # Issue exists in repository but is not yet in Project V2.
-        if existing_issue.id not in project_item_state.items:
-            actions.append(
-                PlanAction(
-                    operation="add_to_project",
-                    resource="issue",
-                    description=f"Add issue '{issue.title}' to project",
-                    payload={
-                        "issue_id": existing_issue.id,
-                        "title": existing_issue.title,
-                    },
-                )
-            )
-
-            continue
-
-        # CASE 3:
-        # Issue exists and is already in the project.
-        # No synchronization action is required.
 
     return actions

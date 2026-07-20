@@ -38,7 +38,7 @@ class IssuesAPI:
           ) {
             issues(
               first: 100,
-              states: [OPEN]
+              states: [OPEN, CLOSED]
             ) {
               nodes {
                 id

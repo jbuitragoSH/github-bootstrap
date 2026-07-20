@@ -7,6 +7,7 @@ from github_bootstrap.specification.models import (
     DateField,
     Field,
     Issue,
+    Iteration,
     IterationField,
     Label,
     Milestone,
@@ -123,7 +124,24 @@ def _parse_field(
         )
 
     if field_type == "iteration":
-        return IterationField(name=name)
+        configuration = project_field["configuration"]
+
+        return IterationField(
+            name=name,
+            duration=configuration["duration"],
+            start_date=_parse_required_date(
+                configuration["start_date"],
+            ),
+            iterations=[
+                Iteration(
+                    title=iteration["title"],
+                )
+                for iteration in configuration.get(
+                    "iterations",
+                    [],
+                )
+            ],
+        )
 
     raise ValueError(f"Unsupported field type: {field_type}")
 
@@ -141,3 +159,15 @@ def _parse_optional_date(value: object) -> date | None:
         return date.fromisoformat(value)
 
     raise TypeError("Date value must be a date, ISO date string, or None.")
+
+
+def _parse_required_date(value: object) -> date:
+    """Parse a required ISO date value."""
+
+    if isinstance(value, date):
+        return value
+
+    if isinstance(value, str):
+        return date.fromisoformat(value)
+
+    raise TypeError("Date value must be a date or ISO date string.")

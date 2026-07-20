@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import date, timedelta
 from typing import TYPE_CHECKING, Any
 
 from github_bootstrap.github.exceptions import GitHubError
@@ -15,6 +15,7 @@ from github_bootstrap.github.field_state import (
 
 if TYPE_CHECKING:
     from github_bootstrap.github.client import GitHubClient
+    from github_bootstrap.specification.models import Iteration
 
 
 class FieldsAPI:
@@ -103,6 +104,9 @@ class FieldsAPI:
         name: str,
         data_type: str,
         options: list[str] | None = None,
+        duration: int | None = None,
+        start_date: date | None = None,
+        iterations: list[Iteration] | None = None,
     ) -> None:
         """Create a project field."""
 
@@ -174,15 +178,35 @@ class FieldsAPI:
             }
             """
 
-            start_date = datetime.now(timezone.utc).date().isoformat()
+            if duration is None:
+                raise ValueError("Duration is required for iteration fields.")
+
+            if start_date is None:
+                raise ValueError("Start date is required for iteration fields.")
+
+            iteration_inputs = [
+                {
+                    "title": iteration.title,
+                    "startDate": (
+                        start_date
+                        + timedelta(
+                            days=index * duration,
+                        )
+                    ).isoformat(),
+                    "duration": duration,
+                }
+                for index, iteration in enumerate(
+                    iterations or [],
+                )
+            ]
 
             variables = {
                 "projectId": project_id,
                 "name": name,
                 "configuration": {
-                    "duration": 14,
-                    "startDate": start_date,
-                    "iterations": [],
+                    "duration": duration,
+                    "startDate": start_date.isoformat(),
+                    "iterations": iteration_inputs,
                 },
             }
 

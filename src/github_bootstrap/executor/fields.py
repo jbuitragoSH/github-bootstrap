@@ -32,4 +32,7 @@ def execute_field_action(
         name=action.payload["name"],
         data_type=action.payload["data_type"],
         options=action.payload.get("options"),
+        duration=action.payload.get("duration"),
+        start_date=action.payload.get("start_date"),
+        iterations=action.payload.get("iterations"),
     )

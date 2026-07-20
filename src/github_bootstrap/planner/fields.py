@@ -94,9 +94,17 @@ def _plan_create_field(
         )
 
     if isinstance(project_field, IterationField):
-        return _create_field_action(
-            project_field,
-            data_type="ITERATION",
+        return PlanAction(
+            operation="create",
+            resource="field",
+            description=(f"Create iteration field '{project_field.name}'"),
+            payload={
+                "name": project_field.name,
+                "data_type": "ITERATION",
+                "duration": project_field.duration,
+                "start_date": project_field.start_date,
+                "iterations": project_field.iterations,
+            },
         )
 
     raise TypeError(f"Unsupported field specification: {type(project_field).__name__}")

@@ -1,3 +1,4 @@
+from datetime import date
 from unittest.mock import MagicMock
 
 import pytest
@@ -10,6 +11,7 @@ from github_bootstrap.github.field_state import (
     IterationSnapshot,
 )
 from github_bootstrap.github.fields import FieldsAPI
+from github_bootstrap.specification.models import Iteration
 
 
 def test_client_exposes_fields_api() -> None:
@@ -249,20 +251,43 @@ def test_create_iteration_field_calls_execute() -> None:
         project_id="project-id",
         name="Sprint",
         data_type="ITERATION",
+        duration=14,
+        start_date=date(2026, 8, 1),
+        iterations=[
+            Iteration(title="Sprint 1"),
+            Iteration(title="Sprint 2"),
+            Iteration(title="Sprint 3"),
+        ],
     )
 
     client.execute.assert_called_once()
 
-    query, variables = client.execute.call_args[0]
+    mutation, variables = client.execute.call_args.args
 
-    assert "ITERATION" in query
-    assert "iterationConfiguration" in query
+    assert "createProjectV2Field" in mutation
 
-    assert variables["projectId"] == "project-id"
-    assert variables["name"] == "Sprint"
-
-    configuration = variables["configuration"]
-
-    assert configuration["duration"] == 14
-    assert isinstance(configuration["startDate"], str)
-    assert configuration["iterations"] == []
+    assert variables == {
+        "projectId": "project-id",
+        "name": "Sprint",
+        "configuration": {
+            "duration": 14,
+            "startDate": "2026-08-01",
+            "iterations": [
+                {
+                    "title": "Sprint 1",
+                    "startDate": "2026-08-01",
+                    "duration": 14,
+                },
+                {
+                    "title": "Sprint 2",
+                    "startDate": "2026-08-15",
+                    "duration": 14,
+                },
+                {
+                    "title": "Sprint 3",
+                    "startDate": "2026-08-29",
+                    "duration": 14,
+                },
+            ],
+        },
+    }

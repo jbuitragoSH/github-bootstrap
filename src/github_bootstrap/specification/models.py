@@ -52,8 +52,19 @@ class SingleSelectField(Field):
 
 
 @dataclass(frozen=True)
+class Iteration:
+    """GitHub Project iteration definition."""
+
+    title: str
+
+
+@dataclass(frozen=True)
 class IterationField(Field):
     """GitHub Project iteration field configuration."""
+
+    duration: int
+    start_date: date
+    iterations: list[Iteration] = field(default_factory=list)
 
 
 @dataclass(frozen=True)

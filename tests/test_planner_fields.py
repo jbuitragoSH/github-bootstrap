@@ -1,3 +1,5 @@
+from datetime import date
+
 from github_bootstrap.github.field_state import (
     FieldOptionSnapshot,
     FieldSnapshot,
@@ -13,6 +15,7 @@ from github_bootstrap.planner.fields import plan_fields
 from github_bootstrap.planner.plan import create_plan
 from github_bootstrap.specification.models import (
     DateField,
+    Iteration,
     IterationField,
     NumberField,
     Project,
@@ -47,6 +50,13 @@ def test_plan_fields_creates_missing_fields() -> None:
             ),
             IterationField(
                 name="Sprint",
+                duration=14,
+                start_date=date(2026, 8, 1),
+                iterations=[
+                    Iteration(title="Sprint 1"),
+                    Iteration(title="Sprint 2"),
+                    Iteration(title="Sprint 3"),
+                ],
             ),
         ],
     )
@@ -100,6 +110,13 @@ def test_plan_fields_creates_missing_fields() -> None:
     assert actions[2].payload == {
         "name": "Sprint",
         "data_type": "ITERATION",
+        "duration": 14,
+        "start_date": date(2026, 8, 1),
+        "iterations": [
+            Iteration(title="Sprint 1"),
+            Iteration(title="Sprint 2"),
+            Iteration(title="Sprint 3"),
+        ],
     }
 
 

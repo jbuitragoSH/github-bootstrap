@@ -1,3 +1,4 @@
+from datetime import date
 from unittest.mock import MagicMock
 
 import pytest
@@ -5,6 +6,7 @@ import pytest
 from github_bootstrap.executor.context import ExecutionContext
 from github_bootstrap.executor.fields import execute_field_action
 from github_bootstrap.planner.actions import PlanAction
+from github_bootstrap.specification.models import Iteration
 
 
 def test_execute_text_field_create_action() -> None:
@@ -36,6 +38,9 @@ def test_execute_text_field_create_action() -> None:
         name="Component",
         data_type="TEXT",
         options=None,
+        duration=None,
+        start_date=None,
+        iterations=None,
     )
 
 
@@ -69,6 +74,9 @@ def test_execute_single_select_field_create_action() -> None:
         name="Priority",
         data_type="SINGLE_SELECT",
         options=["Low", "Medium", "High"],
+        duration=None,
+        start_date=None,
+        iterations=None,
     )
 
 
@@ -91,6 +99,13 @@ def test_execute_iteration_field_create_action() -> None:
         payload={
             "name": "Sprint",
             "data_type": "ITERATION",
+            "duration": 14,
+            "start_date": date(2026, 8, 1),
+            "iterations": [
+                Iteration(title="Sprint 1"),
+                Iteration(title="Sprint 2"),
+                Iteration(title="Sprint 3"),
+            ],
         },
     )
 
@@ -101,6 +116,13 @@ def test_execute_iteration_field_create_action() -> None:
         name="Sprint",
         data_type="ITERATION",
         options=None,
+        duration=14,
+        start_date=date(2026, 8, 1),
+        iterations=[
+            Iteration(title="Sprint 1"),
+            Iteration(title="Sprint 2"),
+            Iteration(title="Sprint 3"),
+        ],
     )
 
 

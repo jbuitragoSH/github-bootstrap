@@ -2,6 +2,7 @@ from datetime import date
 
 from github_bootstrap.specification.models import (
     DateField,
+    Iteration,
     IterationField,
     NumberField,
     SingleSelectField,
@@ -145,6 +146,21 @@ def test_parse_specification_with_fields() -> None:
             {
                 "name": "Sprint",
                 "type": "iteration",
+                "configuration": {
+                    "duration": 14,
+                    "start_date": "2026-08-01",
+                    "iterations": [
+                        {
+                            "title": "Sprint 1",
+                        },
+                        {
+                            "title": "Sprint 2",
+                        },
+                        {
+                            "title": "Sprint 3",
+                        },
+                    ],
+                },
             },
         ],
     }
@@ -176,6 +192,13 @@ def test_parse_specification_with_fields() -> None:
 
     assert result.fields[4] == IterationField(
         name="Sprint",
+        duration=14,
+        start_date=date(2026, 8, 1),
+        iterations=[
+            Iteration(title="Sprint 1"),
+            Iteration(title="Sprint 2"),
+            Iteration(title="Sprint 3"),
+        ],
     )
 
 

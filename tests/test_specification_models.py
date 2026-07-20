@@ -2,6 +2,7 @@ from datetime import date
 
 from github_bootstrap.specification.models import (
     DateField,
+    Iteration,
     IterationField,
     Milestone,
     NumberField,
@@ -114,9 +115,19 @@ def test_single_select_field_has_empty_options_by_default() -> None:
 def test_create_iteration_field() -> None:
     project_field = IterationField(
         name="Iteration",
+        duration=14,
+        start_date=date(2026, 8, 1),
+        iterations=[
+            Iteration(title="Sprint 1"),
+        ],
     )
 
     assert project_field.name == "Iteration"
+    assert project_field.duration == 14
+    assert project_field.start_date == date(2026, 8, 1)
+    assert project_field.iterations == [
+        Iteration(title="Sprint 1"),
+    ]
 
 
 def test_project_specification_contains_fields() -> None:
@@ -132,7 +143,14 @@ def test_project_specification_contains_fields() -> None:
                 "High",
             ],
         ),
-        IterationField(name="Iteration"),
+        IterationField(
+            name="Iteration",
+            duration=14,
+            start_date=date(2026, 8, 1),
+            iterations=[
+                Iteration(title="Sprint 1"),
+            ],
+        ),
     ]
 
     specification = ProjectSpecification(

@@ -14,11 +14,17 @@ from github_bootstrap.github.github_state import GitHubState
 from github_bootstrap.github.project_item_state import (
     ProjectItemState,
 )
-from github_bootstrap.planner.plan import create_plan
+from github_bootstrap.planner.plan import (
+    create_infrastructure_plan,
+    create_issue_plan,
+    create_plan,
+    create_project_plan,
+)
 from github_bootstrap.specification.loader import (
     SpecificationError,
     load_specification,
 )
+from github_bootstrap.specification.models import ProjectSpecification
 from github_bootstrap.specification.parser import parse_specification
 from github_bootstrap.specification.validator import (
     SpecificationValidationError,
@@ -87,6 +93,54 @@ def github_check() -> None:
     typer.echo(f"Authenticated as: {user['login']}")
 
 
+def _load_github_state(
+    client: GitHubClient,
+    project_specification: ProjectSpecification,
+) -> GitHubState:
+    """Load the current GitHub synchronization state."""
+
+    project_state = client.projects.find(
+        project_specification.project.title,
+    )
+
+    label_state = client.labels.find(
+        owner=project_specification.organization,
+        repository=project_specification.repository,
+    )
+
+    milestone_state = client.milestones.find(
+        owner=project_specification.organization,
+        repository=project_specification.repository,
+    )
+
+    field_state = client.fields.find(
+        project_title=project_specification.project.title,
+    )
+
+    issue_state = client.issues.find(
+        owner=project_specification.organization,
+        repository=project_specification.repository,
+    )
+
+    if project_state.id is not None:
+        project_item_state = client.project_items.find(
+            project_id=project_state.id,
+        )
+    else:
+        project_item_state = ProjectItemState(
+            items={},
+        )
+
+    return GitHubState(
+        project=project_state,
+        labels=label_state,
+        milestones=milestone_state,
+        fields=field_state,
+        issues=issue_state,
+        project_items=project_item_state,
+    )
+
+
 @app.command()
 def sync(
     dry_run: bool = typer.Option(
@@ -114,45 +168,9 @@ def sync(
         raise typer.Exit(code=1) from error
 
     try:
-        project_state = client.projects.find(
-            project_specification.project.title,
-        )
-
-        label_state = client.labels.find(
-            owner=project_specification.organization,
-            repository=project_specification.repository,
-        )
-
-        milestone_state = client.milestones.find(
-            owner=project_specification.organization,
-            repository=project_specification.repository,
-        )
-
-        field_state = client.fields.find(
-            project_title=project_specification.project.title,
-        )
-
-        issue_state = client.issues.find(
-            owner=project_specification.organization,
-            repository=project_specification.repository,
-        )
-
-        if project_state.id is not None:
-            project_item_state = client.project_items.find(
-                project_id=project_state.id,
-            )
-        else:
-            project_item_state = ProjectItemState(
-                items={},
-            )
-
-        github_state = GitHubState(
-            project=project_state,
-            labels=label_state,
-            milestones=milestone_state,
-            fields=field_state,
-            issues=issue_state,
-            project_items=project_item_state,
+        github_state = _load_github_state(
+            client,
+            project_specification,
         )
 
     except GitHubError as error:
@@ -208,19 +226,79 @@ def sync(
         typer.echo(f"Error: {error}")
         raise typer.Exit(code=1) from error
 
-    context = ExecutionContext(
+    executor = Executor(client)
+
+    # Phase 1: create the Project V2.
+    project_plan = create_project_plan(
+        project_specification,
+        github_state,
+    )
+
+    project_context = ExecutionContext(
         owner_id=viewer["id"],
         repository_id=repository.id,
         owner=project_specification.organization,
         repository=project_specification.repository,
-        project_id=project_state.id,
-        field_state=field_state,
+        project_id=github_state.project.id,
+        field_state=github_state.fields,
     )
 
-    executor = Executor(client)
     executor.execute(
-        plan,
-        context,
+        project_plan,
+        project_context,
+    )
+
+    # Reload state so the new Project ID is available.
+    github_state = _load_github_state(
+        client,
+        project_specification,
+    )
+
+    # Phase 2: create labels, milestones, and fields.
+    infrastructure_plan = create_infrastructure_plan(
+        project_specification,
+        github_state,
+    )
+
+    infrastructure_context = ExecutionContext(
+        owner_id=viewer["id"],
+        repository_id=repository.id,
+        owner=project_specification.organization,
+        repository=project_specification.repository,
+        project_id=github_state.project.id,
+        field_state=github_state.fields,
+    )
+
+    executor.execute(
+        infrastructure_plan,
+        infrastructure_context,
+    )
+
+    # Reload state so milestone numbers, field IDs,
+    # option IDs, and iteration IDs are available.
+    github_state = _load_github_state(
+        client,
+        project_specification,
+    )
+
+    # Phase 3: create or synchronize issues.
+    issue_plan = create_issue_plan(
+        project_specification,
+        github_state,
+    )
+
+    issue_context = ExecutionContext(
+        owner_id=viewer["id"],
+        repository_id=repository.id,
+        owner=project_specification.organization,
+        repository=project_specification.repository,
+        project_id=github_state.project.id,
+        field_state=github_state.fields,
+    )
+
+    executor.execute(
+        issue_plan,
+        issue_context,
     )
 
     typer.echo("Synchronization complete.")

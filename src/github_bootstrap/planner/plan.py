@@ -101,3 +101,73 @@ def create_plan(
     )
 
     return plan
+
+
+def create_infrastructure_plan(
+    specification: ProjectSpecification,
+    state: GitHubState,
+) -> Plan:
+    """Create a plan for project infrastructure."""
+
+    plan = Plan()
+
+    plan.extend(
+        plan_labels(
+            specification,
+            state.labels,
+        )
+    )
+
+    plan.extend(
+        plan_milestones(
+            specification,
+            state.milestones,
+        )
+    )
+
+    plan.extend(
+        plan_fields(
+            specification,
+            state.fields,
+        )
+    )
+
+    return plan
+
+
+def create_issue_plan(
+    specification: ProjectSpecification,
+    state: GitHubState,
+) -> Plan:
+    """Create a plan for issues and project items."""
+
+    plan = Plan()
+
+    plan.extend(
+        plan_issues(
+            specification,
+            state.issues,
+            state.milestones,
+            state.project_items,
+        )
+    )
+
+    return plan
+
+
+def create_project_plan(
+    specification: ProjectSpecification,
+    state: GitHubState,
+) -> Plan:
+    """Create a plan for the GitHub Project."""
+
+    plan = Plan()
+
+    plan.extend(
+        plan_projects(
+            specification,
+            state.project,
+        )
+    )
+
+    return plan

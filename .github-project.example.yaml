@@ -1,0 +1,211 @@
+organization: jbuitragoSH
+repository: github-bootstrap
+
+project:
+  title: GitHub Bootstrap Development
+
+labels:
+  - name: bug
+    color: d73a4a
+    description: Something isn't working
+
+  - name: documentation
+    color: "0075CA"
+    description: Architecture and development documentation
+
+milestones:
+  - title: Sprint 1
+    description: Academic Knowledge Core foundation
+    due_on: 2026-08-15
+
+fields:
+  - name: Component
+    type: text
+
+  - name: Story Points
+    type: number
+
+  - name: Due Date
+    type: date
+
+  - name: Priority
+    type: single_select
+    options:
+      - Low
+      - Medium
+      - High
+      - Critical
+
+  - name: Status
+    type: single_select
+    options:
+      - Backlog
+      - Ready
+      - In Progress
+      - In Review
+      - Done
+
+  - name: Sprint
+    type: iteration
+    configuration:
+      duration: 14
+      start_date: 2026-08-01
+      iterations:
+        - title: Sprint 1
+        - title: Sprint 2
+        - title: Sprint 3
+
+issues:
+  - title: Implement Academic Program aggregate
+    body: |
+      Implement the initial Academic Program aggregate based on AG-001.
+
+      Scope:
+      - aggregate root
+      - identity
+      - initial invariants
+      - domain tests
+    labels:
+      - domain
+    milestone: Sprint 1
+    fields:
+      Status: Backlog
+      Priority: High
+      Component: Academic Knowledge Core
+      Story Points: 5
+      Due Date: 2026-08-05
+      Sprint: Sprint 1
+
+  - title: Implement Curriculum Design aggregate
+    body: |
+      Implement the initial Curriculum Design aggregate based on AG-101.
+    labels:
+      - domain
+    milestone: Sprint 1
+    fields:
+      Status: Backlog
+      Priority: High
+      Component: Academic Knowledge Core
+      Story Points: 5
+      Due Date: 2026-08-07
+      Sprint: Sprint 1
+
+  - title: Implement Curriculum Version aggregate
+    body: |
+      Implement the initial Curriculum Version aggregate based on AG-102.
+    labels:
+      - domain
+    milestone: Sprint 1
+    fields:
+      Status: Backlog
+      Priority: High
+      Component: Academic Knowledge Core
+      Story Points: 5
+      Due Date: 2026-08-09
+      Sprint: Sprint 1
+
+  - title: Implement Competency domain model
+    body: |
+      Implement the initial Competency domain model based on AG-103.
+    labels:
+      - domain
+    milestone: Sprint 1
+    fields:
+      Status: Backlog
+      Priority: Medium
+      Component: Academic Knowledge Core
+      Story Points: 3
+      Due Date: 2026-08-11
+      Sprint: Sprint 1
+
+  - title: Implement Learning Outcome domain model
+    body: |
+      Implement the initial Learning Outcome domain model based on AG-104.
+    labels:
+      - domain
+    milestone: Sprint 1
+    fields:
+      Status: Backlog
+      Priority: Medium
+      Component: Academic Knowledge Core
+      Story Points: 3
+      Due Date: 2026-08-13
+      Sprint: Sprint 1
+
+  - title: Implement Academic Program use cases
+    body: |
+      Implement the initial application use cases for Academic Program.
+
+      Scope:
+      - create academic program
+      - retrieve academic program
+      - basic validation
+    labels:
+      - application
+    milestone: Sprint 1
+    fields:
+      Status: Backlog
+      Priority: High
+      Component: Academic Knowledge Core
+      Story Points: 5
+      Due Date: 2026-08-14
+      Sprint: Sprint 1
+
+  - title: Implement Curriculum Design use cases
+    body: |
+      Implement the initial application use cases for Curriculum Design.
+    labels:
+      - application
+    milestone: Sprint 1
+    fields:
+      Status: Backlog
+      Priority: High
+      Component: Academic Knowledge Core
+      Story Points: 5
+      Due Date: 2026-08-15
+      Sprint: Sprint 1
+
+  - title: Define persistence ports for Academic Knowledge Core
+    body: |
+      Define the persistence ports required by the initial Academic Knowledge Core aggregates.
+    labels:
+      - architecture
+    milestone: Sprint 1
+    fields:
+      Status: Backlog
+      Priority: High
+      Component: Academic Knowledge Core
+      Story Points: 3
+      Due Date: 2026-08-15
+      Sprint: Sprint 1
+
+  - title: Implement in-memory adapters for initial aggregates
+    body: |
+      Implement simple in-memory adapters for the first domain aggregates.
+
+      These adapters will support early use case development and testing.
+    labels:
+      - application
+    milestone: Sprint 1
+    fields:
+      Status: Backlog
+      Priority: Medium
+      Component: Academic Knowledge Core
+      Story Points: 3
+      Due Date: 2026-08-15
+      Sprint: Sprint 1
+
+  - title: Document first vertical slice architecture
+    body: |
+      Document the implemented first vertical slice and the architectural decisions that emerged from it.
+    labels:
+      - documentation
+      - architecture
+    milestone: Sprint 1
+    fields:
+      Status: Backlog
+      Priority: Medium
+      Component: Architecture
+      Story Points: 2
+      Due Date: 2026-08-15
+      Sprint: Sprint 1

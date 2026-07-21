@@ -6,14 +6,14 @@ A project is described in a YAML specification and synchronized with GitHub thro
 
 The tool is designed to bootstrap and maintain environments based on:
 
-* GitHub Projects V2
-* Labels
-* Milestones
-* Custom project fields
-* Iterations
-* Issues
-* Project items
-* Project field values
+- GitHub Projects V2
+- Labels
+- Milestones
+- Custom project fields
+- Iterations
+- Issues
+- Project items
+- Project field values
 
 GitHub Bootstrap is currently used to manage the development environment of projects such as Knowledge Platform.
 
@@ -39,7 +39,7 @@ Execution
 GitHub REST / GraphQL APIs
 ```
 
-The synchronization process compares the desired configuration with the current GitHub state and creates the missing resources.
+The synchronization process compares the desired configuration with the current GitHub state, plans the required changes, creates missing resources, synchronizes supported values, and reports detected drift.
 
 ---
 
@@ -47,38 +47,38 @@ The synchronization process compares the desired configuration with the current 
 
 GitHub Bootstrap can currently manage:
 
-* Project V2 creation
-* Repository labels
-* Repository milestones
-* Text fields
-* Number fields
-* Date fields
-* Single-select fields
-* Iteration fields
-* Initial project iterations
-* Repository issues
-* Issue labels and milestones
-* Adding issues to Project V2
-* Project item field values
-* Existing issue detection
-* Drift detection for selected resources
-* Multi-phase bootstrap from a clean repository
+- Project V2 creation
+- Repository labels
+- Repository milestones
+- Text fields
+- Number fields
+- Date fields
+- Single-select fields
+- Iteration fields
+- Initial project iterations
+- Repository issues
+- Issue labels and milestones
+- Adding issues to Project V2
+- Project item field values
+- Existing issue detection
+- Drift detection for selected resources
+- Multi-phase bootstrap from a clean repository
 
 Supported project item field values include:
 
-* `TEXT`
-* `NUMBER`
-* `DATE`
-* `SINGLE_SELECT`
-* `ITERATION`
+- `TEXT`
+- `NUMBER`
+- `DATE`
+- `SINGLE_SELECT`
+- `ITERATION`
 
 ---
 
 ## Requirements
 
-* Python 3.12
-* `uv`
-* A GitHub personal access token with the required repository and Projects permissions
+- Python 3.12
+- `uv`
+- A GitHub personal access token with the required repository and Projects permissions
 
 Set the GitHub token as an environment variable:
 
@@ -194,6 +194,9 @@ issues:
       Sprint: Sprint 1
 ```
 
+For the complete specification format, see the
+[Specification Reference](docs/SPECIFICATION-REFERENCE.md).
+
 Review the synchronization plan:
 
 ```bash
@@ -271,11 +274,11 @@ The initial `Status` configuration must therefore be adjusted manually when requ
 
 A typical workflow is:
 
-* Backlog
-* Ready
-* In Progress
-* In Review
-* Done
+- Backlog
+- Ready
+- In Progress
+- In Review
+- Done
 
 After configuring the native `Status` field, run synchronization again to assign the desired `Status` values to project items.
 
@@ -283,9 +286,9 @@ After configuring the native `Status` field, run synchronization again to assign
 
 Project views such as:
 
-* Current Sprint
-* Backlog
-* Roadmap
+- Current Sprint
+- Backlog
+- Roadmap
 
 are currently configured manually.
 
@@ -298,6 +301,8 @@ As a result, existing issues may appear as synchronization actions even when the
 ### Project Repository Linking
 
 Issues can be added to a Project V2, but the Project itself is not currently linked automatically to the repository's **Projects** tab.
+
+This does not prevent repository issues from being added to or managed through the Project.
 
 ---
 
@@ -317,9 +322,9 @@ make verify
 
 The verification pipeline currently includes:
 
-* Ruff
-* MyPy
-* Pytest
+- Ruff
+- MyPy
+- Pytest
 
 The recommended development workflow is:
 
@@ -343,10 +348,10 @@ Commit
 
 GitHub Bootstrap follows a layered and incremental architecture inspired by:
 
-* Hexagonal Architecture
-* Clean Architecture
-* Vertical Slice Architecture
-* Domain-Driven Design principles
+- Hexagonal Architecture
+- Clean Architecture
+- Vertical Slice Architecture
+- Domain-Driven Design principles
 
 The main synchronization flow is:
 
@@ -366,7 +371,7 @@ Executor
 GitHub REST / GraphQL
 ```
 
-See the architecture documentation for more details.
+See [Architecture](docs/ARCHITECTURE.md) for more details.
 
 ---
 
@@ -374,17 +379,14 @@ See the architecture documentation for more details.
 
 Detailed documentation is maintained under `docs/`.
 
-Planned documentation:
+Available documentation:
 
-```text
-docs/
-├── USER-GUIDE.md
-├── SPECIFICATION-REFERENCE.md
-├── ARCHITECTURE.md
-├── TECHNICAL-GUIDE.md
-├── DEVELOPMENT-GUIDE.md
-└── ROADMAP.md
-```
+- [User Guide](docs/USER-GUIDE.md)
+- [Specification Reference](docs/SPECIFICATION-REFERENCE.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Technical Guide](docs/TECHNICAL-GUIDE.md)
+- [Development Guide](docs/DEVELOPMENT-GUIDE.md)
+- [Roadmap](docs/ROADMAP.md)
 
 ---
 
@@ -392,10 +394,12 @@ docs/
 
 GitHub Bootstrap currently provides a functional MVP capable of bootstrapping and synchronizing a real GitHub development environment.
 
-The current focus is:
+The current productization roadmap is:
 
-* Product documentation
-* Reusable application orchestration
-* Basic web interface
-* Deployment
-* Improved reconciliation capabilities
+1. Complete the documentation baseline.
+2. Extract reusable synchronization orchestration from the CLI.
+3. Build a basic web interface.
+4. Deploy the web interface.
+5. Improve reconciliation capabilities based on real usage.
+
+See the [Roadmap](docs/ROADMAP.md) for the current product direction.

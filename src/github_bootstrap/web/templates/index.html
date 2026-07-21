@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>GitHub Bootstrap</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', path='/styles.css') }}"
+    >
+</head>
+
+<body>
+    <main class="container">
+        <header class="page-header">
+            <div>
+                <p class="eyebrow">GitHub project infrastructure</p>
+
+                <h1>GitHub Bootstrap</h1>
+
+                <p class="description">
+                    Define and synchronize your GitHub development
+                    environment from a declarative YAML specification.
+                </p>
+            </div>
+        </header>
+
+        <section class="panel">
+            <div class="panel-header">
+                <div>
+                    <h2>Project Specification</h2>
+
+                    <p>
+                        Define the desired GitHub project environment.
+                    </p>
+                </div>
+            </div>
+
+
+
+            <div class="actions">
+                <form method="post">
+                    <textarea
+                        class="specification-editor"
+                        name="specification"
+                        spellcheck="false"
+                        aria-label="GitHub project specification"
+                    >{{ specification }}</textarea>
+
+                    <label class="confirmation">
+                        <input
+                            type="checkbox"
+                            name="confirm"
+                            value="yes"
+                        >
+                        I understand that synchronization will modify GitHub resources.
+                    </label>
+
+                    <div class="actions">
+                        <button
+                            class="button button-secondary"
+                            type="submit"
+                            formaction="/validate"
+                        >
+                            Validate
+                        </button>
+
+                        <button
+                            class="button button-secondary"
+                            type="submit"
+                            formaction="/dry-run"
+                        >
+                            Dry Run
+                        </button>
+
+                        <button
+                            class="button button-primary"
+                            type="submit"
+                            formaction="/sync"
+                        >
+                            Synchronize
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-header">
+                <div>
+                    <h2>Result</h2>
+
+                    <p>
+                        Validation and synchronization results will
+                        appear here.
+                    </p>
+                </div>
+            </div>
+
+            <pre class="result result-{{ result_type }}">{{ result }}</pre>
+        </section>
+    </main>
+</body>
+</html>

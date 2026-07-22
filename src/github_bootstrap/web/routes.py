@@ -125,7 +125,11 @@ def _render(
     )
 
 
-@router.get("/", response_class=HTMLResponse)
+@router.get(
+    "/",
+    response_class=HTMLResponse,
+    response_model=None,
+)
 def index(
     request: Request,
 ) -> HTMLResponse | RedirectResponse:
@@ -149,7 +153,11 @@ def index(
     )
 
 
-@router.post("/validate", response_class=HTMLResponse)
+@router.post(
+    "/validate",
+    response_class=HTMLResponse,
+    response_model=None,
+)
 def validate(
     request: Request,
     specification: str = Form(...),
@@ -196,7 +204,11 @@ def validate(
         )
 
 
-@router.post("/dry-run", response_class=HTMLResponse)
+@router.post(
+    "/dry-run",
+    response_class=HTMLResponse,
+    response_model=None,
+)
 def dry_run(
     request: Request,
     specification: str = Form(...),
@@ -262,7 +274,11 @@ def dry_run(
         )
 
 
-@router.post("/sync", response_class=HTMLResponse)
+@router.post(
+    "/sync",
+    response_class=HTMLResponse,
+    response_model=None,
+)
 def synchronize(
     request: Request,
     specification: str = Form(...),
@@ -373,7 +389,11 @@ def _require_authentication(
     )
 
 
-@router.get("/login", response_class=HTMLResponse)
+@router.get(
+    "/login",
+    response_class=HTMLResponse,
+    response_model=None,
+)
 def login_page(
     request: Request,
 ) -> HTMLResponse | RedirectResponse:
@@ -394,7 +414,11 @@ def login_page(
     )
 
 
-@router.post("/login", response_class=HTMLResponse)
+@router.post(
+    "/login",
+    response_class=HTMLResponse,
+    response_model=None,
+)
 def login(
     request: Request,
     password: str = Form(...),

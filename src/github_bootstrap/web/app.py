@@ -28,7 +28,11 @@ def create_app() -> FastAPI:
         SessionMiddleware,
         secret_key=session_secret,
         same_site="lax",
-        https_only=True,
+        https_only=os.environ.get(
+            "SESSION_COOKIE_SECURE",
+            "true",
+        ).lower()
+        == "true",
     )
 
     application.mount(

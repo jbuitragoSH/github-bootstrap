@@ -43,35 +43,34 @@ The synchronization process compares the desired configuration with the current 
 
 ---
 
+```markdown
 ## Current Capabilities
 
 GitHub Bootstrap can currently manage:
 
-- Project V2 creation
+- GitHub Projects V2
 - Repository labels
 - Repository milestones
-- Text fields
-- Number fields
-- Date fields
+- Custom project fields
 - Single-select fields
 - Iteration fields
-- Initial project iterations
+- Initial iterations
 - Repository issues
-- Issue labels and milestones
-- Adding issues to Project V2
-- Project item field values
-- Existing issue detection
-- Drift detection for selected resources
-- Multi-phase bootstrap from a clean repository
+- Issue labels
+- Issue milestones
+- Project items
+- Project field values
+- Synchronization planning
+- Dry-run execution
+- Drift detection
+- Multi-phase synchronization
 
-Supported project item field values include:
+The project provides:
 
-- `TEXT`
-- `NUMBER`
-- `DATE`
-- `SINGLE_SELECT`
-- `ITERATION`
-
+- a command-line interface;
+- a basic web interface;
+- password-based web access protection;
+- cloud deployment support.
 ---
 
 ## Requirements
@@ -211,6 +210,17 @@ uv run github-bootstrap sync
 
 ---
 
+## Interfaces
+
+GitHub Bootstrap can be used through both a command-line interface and a basic web interface.
+
+### Command-line interface
+
+Validate and synchronize a project specification:
+
+```bash
+uv run github-bootstrap sync
+
 ## Synchronization Workflow
 
 A real synchronization is executed in phases so resources created earlier are available to later operations.
@@ -260,9 +270,18 @@ Finally, verify the resulting Project V2 and repository resources directly in Gi
 
 ---
 
-## Known Limitations
+## Current Limitations
 
-The current MVP has several known limitations.
+The following capabilities are intentionally not fully automated yet:
+
+- mutation of the native GitHub Project `Status` field options;
+- creation and configuration of project views;
+- complete drift reconciliation for all project item field values;
+- automatic linking of the project to the repository Projects tab;
+- GitHub OAuth authentication;
+- multi-user authentication and authorization.
+
+These capabilities are considered future improvements and are not required for the current MVP.
 
 ### Native Status Field
 

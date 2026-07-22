@@ -1,5 +1,50 @@
 # Roadmap
+# Roadmap
 
+GitHub Bootstrap has reached its initial MVP milestone.
+
+The current version provides an end-to-end declarative workflow for provisioning and synchronizing GitHub project infrastructure.
+
+## MVP Completed
+
+The following capabilities are available:
+
+- declarative YAML project specifications;
+- specification validation;
+- GitHub state discovery;
+- synchronization planning;
+- dry-run execution;
+- multi-phase synchronization;
+- GitHub Projects V2 creation;
+- labels;
+- milestones;
+- custom project fields;
+- iterations;
+- issues;
+- project items;
+- project field values;
+- drift detection;
+- command-line interface;
+- web interface;
+- basic web access protection;
+- cloud deployment.
+
+## Future Improvements
+
+Future development should be driven by concrete product needs.
+
+Potential improvements include:
+
+- native Status field option synchronization;
+- project view creation and configuration;
+- complete project item field-value reconciliation;
+- automatic repository/project linking;
+- GitHub OAuth authentication;
+- multi-user authorization;
+- improved audit logging;
+- richer synchronization reports.
+
+These items are intentionally outside the scope of the current MVP.
 ## Overview
 
 This document summarizes the current state, known limitations, and likely evolution of GitHub Bootstrap.

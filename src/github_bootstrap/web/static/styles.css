@@ -342,6 +342,68 @@ form {
     content: "×";
 }
 
+.login-container {
+    display: grid;
+    place-items: center;
+
+    min-height: 100vh;
+    padding: 1rem;
+}
+
+.login-panel {
+    width: min(100%, 420px);
+    padding: 2rem;
+
+    background: var(--surface);
+
+    border: 1px solid var(--border);
+    border-radius: 12px;
+}
+
+.login-form {
+    display: grid;
+    gap: 0.75rem;
+
+    margin-top: 1.5rem;
+}
+
+.login-form label {
+    font-weight: 600;
+}
+
+.login-form input {
+    width: 100%;
+    padding: 0.75rem;
+
+    color: var(--text);
+    background: var(--surface);
+
+    border: 1px solid var(--border);
+    border-radius: 6px;
+}
+
+.login-form input:focus {
+    border-color: var(--primary);
+    outline: 2px solid rgb(31 136 61 / 20%);
+}
+
+.login-error {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+
+    color: var(--danger);
+    background: rgb(207 34 46 / 6%);
+
+    border: 1px solid rgb(207 34 46 / 30%);
+    border-radius: 6px;
+}
+
+.logout-form {
+    width: auto;
+    margin-top: 1.25rem;
+}
+
+
 @media (max-width: 640px) {
     .container {
         width: min(100% - 1rem, 1080px);

@@ -1,12 +1,14 @@
 """Web routes for GitHub Bootstrap."""
 
+import hmac
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 import yaml
 from fastapi import APIRouter, Form, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from github_bootstrap.application.synchronization_service import (
@@ -124,8 +126,15 @@ def _render(
 
 
 @router.get("/", response_class=HTMLResponse)
-def index(request: Request) -> HTMLResponse:
+def index(
+    request: Request,
+) -> HTMLResponse | RedirectResponse:
     """Render the GitHub Bootstrap web interface."""
+
+    redirect = _require_authentication(request)
+
+    if redirect is not None:
+        return redirect
 
     return _render(
         request=request,
@@ -144,8 +153,13 @@ def index(request: Request) -> HTMLResponse:
 def validate(
     request: Request,
     specification: str = Form(...),
-) -> HTMLResponse:
+) -> HTMLResponse | RedirectResponse:
     """Validate a YAML project specification."""
+
+    redirect = _require_authentication(request)
+
+    if redirect is not None:
+        return redirect
 
     try:
         project_specification = _parse_specification(
@@ -186,8 +200,13 @@ def validate(
 def dry_run(
     request: Request,
     specification: str = Form(...),
-) -> HTMLResponse:
+) -> HTMLResponse | RedirectResponse:
     """Build and display a synchronization plan."""
+
+    redirect = _require_authentication(request)
+
+    if redirect is not None:
+        return redirect
 
     try:
         project_specification = _parse_specification(
@@ -248,8 +267,13 @@ def synchronize(
     request: Request,
     specification: str = Form(...),
     confirm: str | None = Form(None),
-) -> HTMLResponse:
+) -> HTMLResponse | RedirectResponse:
     """Execute synchronization against GitHub."""
+
+    redirect = _require_authentication(request)
+
+    if redirect is not None:
+        return redirect
 
     if confirm != "yes":
         return _render(
@@ -312,8 +336,8 @@ def synchronize(
             request=request,
             specification=specification,
             result=WebResult(
-                title="GitHub error",
-                message="The current GitHub state could not be loaded.",
+                title="GitHub synchronization error",
+                message=("GitHub Bootstrap could not complete the synchronization."),
                 result_type="error",
                 errors=[str(error)],
             ),
@@ -327,3 +351,98 @@ def health() -> dict[str, str]:
     return {
         "status": "ok",
     }
+
+
+def _is_authenticated(request: Request) -> bool:
+    """Return whether the current web session is authenticated."""
+
+    return request.session.get("authenticated") is True
+
+
+def _require_authentication(
+    request: Request,
+) -> RedirectResponse | None:
+    """Redirect unauthenticated requests to the login page."""
+
+    if _is_authenticated(request):
+        return None
+
+    return RedirectResponse(
+        url="/login",
+        status_code=303,
+    )
+
+
+@router.get("/login", response_class=HTMLResponse)
+def login_page(
+    request: Request,
+) -> HTMLResponse | RedirectResponse:
+    """Render the login page."""
+
+    if _is_authenticated(request):
+        return RedirectResponse(
+            url="/",
+            status_code=303,
+        )
+
+    return templates.TemplateResponse(
+        request=request,
+        name="login.html",
+        context={
+            "error": None,
+        },
+    )
+
+
+@router.post("/login", response_class=HTMLResponse)
+def login(
+    request: Request,
+    password: str = Form(...),
+) -> HTMLResponse | RedirectResponse:
+    """Authenticate access to the web interface."""
+
+    expected_password = os.environ.get("WEB_ACCESS_PASSWORD")
+
+    if not expected_password:
+        return templates.TemplateResponse(
+            request=request,
+            name="login.html",
+            context={
+                "error": (
+                    "WEB_ACCESS_PASSWORD environment variable is not configured."
+                ),
+            },
+            status_code=500,
+        )
+
+    if not hmac.compare_digest(
+        password,
+        expected_password,
+    ):
+        return templates.TemplateResponse(
+            request=request,
+            name="login.html",
+            context={
+                "error": "Invalid password.",
+            },
+            status_code=401,
+        )
+
+    request.session["authenticated"] = True
+
+    return RedirectResponse(
+        url="/",
+        status_code=303,
+    )
+
+
+@router.post("/logout")
+def logout(request: Request) -> RedirectResponse:
+    """Clear the authenticated web session."""
+
+    request.session.clear()
+
+    return RedirectResponse(
+        url="/login",
+        status_code=303,
+    )

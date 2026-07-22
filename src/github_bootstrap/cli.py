@@ -156,3 +156,27 @@ def sync(
         return
 
     typer.echo("Synchronization complete.")
+
+
+@app.command()
+def web(
+    host: str = typer.Option(
+        "0.0.0.0",
+        "--host",
+        help="Host interface for the web server.",
+    ),
+    port: int = typer.Option(
+        8000,
+        "--port",
+        help="Port for the web server.",
+    ),
+) -> None:
+    """Run the GitHub Bootstrap web interface."""
+
+    import uvicorn
+
+    uvicorn.run(
+        "github_bootstrap.web.app:app",
+        host=host,
+        port=port,
+    )

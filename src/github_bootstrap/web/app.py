@@ -28,7 +28,7 @@ def create_app() -> FastAPI:
         SessionMiddleware,
         secret_key=session_secret,
         same_site="lax",
-        https_only=False,
+        https_only=True,
     )
 
     application.mount(

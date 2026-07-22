@@ -20,7 +20,9 @@
     <main class="container">
         <header class="page-header">
             <div>
-                <p class="eyebrow">GitHub project infrastructure</p>
+                <p class="eyebrow">
+                    GitHub project infrastructure
+                </p>
 
                 <h1>GitHub Bootstrap</h1>
 
@@ -42,54 +44,58 @@
                 </div>
             </div>
 
+            <form method="post">
+                <textarea
+                    class="specification-editor"
+                    name="specification"
+                    spellcheck="false"
+                    aria-label="GitHub project specification"
+                >{{ specification }}</textarea>
+
+                <label class="confirmation">
+                    <input
+                        id="sync-confirmation"
+                        type="checkbox"
+                        name="confirm"
+                        value="yes"
+                    >
+
+                    <span>
+                        I understand that synchronization will modify
+                        GitHub resources.
+                    </span>
+                </label>
+
+                <div class="actions">
+                    <button
+                        class="button button-secondary"
+                        type="submit"
+                        formaction="/validate"
+                    >
+                        Validate
+                    </button>
+
+                    <button
+                        class="button button-secondary"
+                        type="submit"
+                        formaction="/dry-run"
+                    >
+                        Dry Run
+                    </button>
+
+                    <button
+                        id="synchronize-button"
+                        class="button button-primary"
+                        type="submit"
+                        formaction="/sync"
+                        disabled
+                    >
+                        Synchronize
+                    </button>
+                </div>
 
 
-            <div class="actions">
-                <form method="post">
-                    <textarea
-                        class="specification-editor"
-                        name="specification"
-                        spellcheck="false"
-                        aria-label="GitHub project specification"
-                    >{{ specification }}</textarea>
-
-                    <label class="confirmation">
-                        <input
-                            type="checkbox"
-                            name="confirm"
-                            value="yes"
-                        >
-                        I understand that synchronization will modify GitHub resources.
-                    </label>
-
-                    <div class="actions">
-                        <button
-                            class="button button-secondary"
-                            type="submit"
-                            formaction="/validate"
-                        >
-                            Validate
-                        </button>
-
-                        <button
-                            class="button button-secondary"
-                            type="submit"
-                            formaction="/dry-run"
-                        >
-                            Dry Run
-                        </button>
-
-                        <button
-                            class="button button-primary"
-                            type="submit"
-                            formaction="/sync"
-                        >
-                            Synchronize
-                        </button>
-                    </div>
-                </form>
-
-            </div>
+            </form>
         </section>
 
         <section class="panel">
@@ -98,14 +104,85 @@
                     <h2>Result</h2>
 
                     <p>
-                        Validation and synchronization results will
-                        appear here.
+                        Validation and synchronization results appear here.
                     </p>
                 </div>
             </div>
 
-            <pre class="result result-{{ result_type }}">{{ result }}</pre>
+            <div class="result result-{{ result.result_type }}">
+                <div class="result-summary">
+                    <h3>{{ result.title }}</h3>
+
+                    <p>{{ result.message }}</p>
+                </div>
+
+                {% if result.actions %}
+                    <section class="result-section">
+                        <h4>
+                            Planned or applied actions
+                            <span class="result-count">
+                                {{ result.actions | length }}
+                            </span>
+                        </h4>
+
+                        <ul class="result-list result-list-actions">
+                            {% for action in result.actions %}
+                                <li>{{ action }}</li>
+                            {% endfor %}
+                        </ul>
+                    </section>
+                {% endif %}
+
+                {% if result.drift %}
+                    <section class="result-section">
+                        <h4>
+                            Drift detected
+                            <span class="result-count">
+                                {{ result.drift | length }}
+                            </span>
+                        </h4>
+
+                        <ul class="result-list result-list-drift">
+                            {% for item in result.drift %}
+                                <li>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                    </section>
+                {% endif %}
+
+                {% if result.errors %}
+                    <section class="result-section">
+                        <h4>
+                            Errors
+                            <span class="result-count">
+                                {{ result.errors | length }}
+                            </span>
+                        </h4>
+
+                        <ul class="result-list result-list-errors">
+                            {% for error in result.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </section>
+                {% endif %}
+            </div>
         </section>
     </main>
+
+    <script>
+        const confirmation = document.getElementById(
+            "sync-confirmation"
+        );
+
+        const synchronizeButton = document.getElementById(
+            "synchronize-button"
+        );
+
+        confirmation.addEventListener("change", () => {
+            synchronizeButton.disabled = !confirmation.checked;
+        });
+    </script>
+
 </body>
 </html>

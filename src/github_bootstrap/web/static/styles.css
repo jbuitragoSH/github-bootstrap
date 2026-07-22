@@ -4,10 +4,17 @@
     --background: #f6f8fa;
     --surface: #ffffff;
     --border: #d0d7de;
+    --border-strong: #afb8c1;
+
     --text: #1f2328;
     --muted: #59636e;
+
     --primary: #1f883d;
     --primary-hover: #1a7f37;
+
+    --danger: #cf222e;
+    --warning: #9a6700;
+
     --code-background: #f6f8fa;
 }
 
@@ -30,7 +37,8 @@ body {
 }
 
 button,
-textarea {
+textarea,
+input {
     font: inherit;
 }
 
@@ -94,13 +102,19 @@ h1 {
     margin: 0.4rem 0 0;
 
     color: var(--muted);
+    line-height: 1.5;
+}
+
+form {
+    width: 100%;
 }
 
 .specification-editor {
     display: block;
 
     width: 100%;
-    min-height: 420px;
+    min-width: 100%;
+    min-height: 460px;
     padding: 1rem;
 
     color: var(--text);
@@ -121,9 +135,38 @@ h1 {
     resize: vertical;
 }
 
+.specification-editor:hover {
+    border-color: var(--border-strong);
+}
+
 .specification-editor:focus {
     border-color: var(--primary);
     outline: 2px solid rgb(31 136 61 / 20%);
+}
+
+.confirmation {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+
+    margin-top: 1rem;
+
+    color: var(--muted);
+
+    font-size: 0.9rem;
+    line-height: 1.4;
+
+    cursor: pointer;
+}
+
+.confirmation input {
+    width: 1rem;
+    height: 1rem;
+    margin: 0.15rem 0 0;
+
+    flex: 0 0 auto;
+
+    cursor: pointer;
 }
 
 .actions {
@@ -135,6 +178,7 @@ h1 {
 }
 
 .button {
+    min-height: 40px;
     padding: 0.65rem 1rem;
 
     border: 1px solid var(--border);
@@ -143,6 +187,11 @@ h1 {
     font-weight: 600;
 
     cursor: pointer;
+
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        opacity 0.15s ease;
 }
 
 .button-primary {
@@ -153,11 +202,17 @@ h1 {
 
 .button-primary:hover:not(:disabled) {
     background: var(--primary-hover);
+    border-color: var(--primary-hover);
 }
 
 .button-secondary {
     color: var(--text);
     background: var(--surface);
+}
+
+.button-secondary:hover:not(:disabled) {
+    background: var(--background);
+    border-color: var(--border-strong);
 }
 
 .button:disabled {
@@ -166,27 +221,125 @@ h1 {
 }
 
 .result {
-    min-height: 100px;
-    margin: 0;
-    padding: 1rem;
-
-    overflow-x: auto;
+    padding: 1rem 1.25rem;
 
     color: var(--text);
     background: var(--code-background);
 
     border: 1px solid var(--border);
+    border-left-width: 4px;
     border-radius: 8px;
+}
 
-    white-space: pre-wrap;
+.result-neutral {
+    border-left-color: var(--border-strong);
 }
 
 .result-success {
-    border-color: #1f883d;
+    border-left-color: var(--primary);
 }
 
 .result-error {
-    border-color: #cf222e;
+    border-left-color: var(--danger);
+}
+
+.result-warning {
+    border-left-color: var(--warning);
+}
+
+.result-summary h3 {
+    margin: 0;
+
+    font-size: 1rem;
+}
+
+.result-summary p {
+    margin: 0.4rem 0 0;
+
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.result-section {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+
+    border-top: 1px solid var(--border);
+}
+
+.result-section h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    margin: 0 0 0.75rem;
+
+    font-size: 0.9rem;
+}
+
+.result-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 1.5rem;
+    height: 1.5rem;
+    padding: 0 0.4rem;
+
+    color: var(--muted);
+    background: var(--surface);
+
+    border: 1px solid var(--border);
+    border-radius: 999px;
+
+    font-size: 0.75rem;
+}
+
+.result-list {
+    display: grid;
+    gap: 0.5rem;
+
+    margin: 0;
+    padding: 0;
+
+    list-style: none;
+}
+
+.result-list li {
+    position: relative;
+
+    padding-left: 1.5rem;
+
+    font-family:
+        "SFMono-Regular",
+        Consolas,
+        "Liberation Mono",
+        monospace;
+
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.result-list li::before {
+    position: absolute;
+    left: 0;
+
+    font-weight: 700;
+}
+
+.result-list-actions li::before {
+    color: var(--primary);
+    content: "+";
+}
+
+.result-list-drift li::before {
+    color: var(--warning);
+    content: "!";
+}
+
+.result-list-errors li::before {
+    color: var(--danger);
+    content: "×";
 }
 
 @media (max-width: 640px) {
@@ -199,6 +352,10 @@ h1 {
         padding: 1rem;
     }
 
+    .specification-editor {
+        min-height: 360px;
+    }
+
     .actions {
         flex-direction: column;
     }
@@ -206,25 +363,4 @@ h1 {
     .button {
         width: 100%;
     }
-}
-
-.confirmation {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-
-    margin-top: 1rem;
-
-    color: var(--muted);
-
-    font-size: 0.9rem;
-}
-
-.confirmation input {
-    width: 1rem;
-    height: 1rem;
-}
-
-.result-warning {
-    border-color: #9a6700;
 }

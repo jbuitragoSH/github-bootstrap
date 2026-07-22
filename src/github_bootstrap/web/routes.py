@@ -1,5 +1,6 @@
 """Web routes for GitHub Bootstrap."""
 
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +14,7 @@ from github_bootstrap.application.synchronization_service import (
 )
 from github_bootstrap.github.client import GitHubClient
 from github_bootstrap.github.exceptions import GitHubError
+from github_bootstrap.planner.plan import Plan
 from github_bootstrap.specification.models import ProjectSpecification
 from github_bootstrap.specification.parser import parse_specification
 from github_bootstrap.specification.validator import (
@@ -22,11 +24,30 @@ from github_bootstrap.specification.validator import (
 
 WEB_DIRECTORY = Path(__file__).parent
 
+DEFAULT_SPECIFICATION = """organization:
+repository:
+
+project:
+  title:
+"""
+
 templates = Jinja2Templates(
     directory=WEB_DIRECTORY / "templates",
 )
 
 router = APIRouter()
+
+
+@dataclass(frozen=True)
+class WebResult:
+    """Structured result rendered by the web interface."""
+
+    title: str
+    message: str
+    result_type: str = "neutral"
+    actions: list[str] = field(default_factory=list)
+    drift: list[str] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
 
 
 def _parse_specification(
@@ -50,11 +71,45 @@ def _parse_specification(
     )
 
 
+def _build_plan_result(
+    plan: Plan,
+    *,
+    title: str,
+    message: str,
+) -> WebResult:
+    """Convert a synchronization plan into a web result."""
+
+    actions = [action.description for action in plan.executable_actions()]
+
+    drift = [action.description for action in plan.drift_actions()]
+
+    if plan.is_empty():
+        return WebResult(
+            title=title,
+            message="Everything is up to date.",
+            result_type="success",
+        )
+
+    if actions and drift:
+        result_type = "warning"
+    elif drift:
+        result_type = "warning"
+    else:
+        result_type = "success"
+
+    return WebResult(
+        title=title,
+        message=message,
+        result_type=result_type,
+        actions=actions,
+        drift=drift,
+    )
+
+
 def _render(
     request: Request,
     specification: str,
-    result: str,
-    result_type: str,
+    result: WebResult,
 ) -> HTMLResponse:
     """Render the main web interface."""
 
@@ -64,7 +119,6 @@ def _render(
         context={
             "specification": specification,
             "result": result,
-            "result_type": result_type,
         },
     )
 
@@ -73,18 +127,16 @@ def _render(
 def index(request: Request) -> HTMLResponse:
     """Render the GitHub Bootstrap web interface."""
 
-    specification = (
-        "organization: example-org\n"
-        "repository: example-repository\n\n"
-        "project:\n"
-        "  title: Example Development\n"
-    )
-
     return _render(
         request=request,
-        specification=specification,
-        result="No operation executed yet.",
-        result_type="neutral",
+        specification=DEFAULT_SPECIFICATION,
+        result=WebResult(
+            title="Ready",
+            message=(
+                "Validate the specification or run a dry run "
+                "to inspect the synchronization plan."
+            ),
+        ),
     )
 
 
@@ -96,21 +148,37 @@ def validate(
     """Validate a YAML project specification."""
 
     try:
-        _parse_specification(specification)
-
-        return _render(
-            request=request,
-            specification=specification,
-            result="Specification is valid.",
-            result_type="success",
+        project_specification = _parse_specification(
+            specification,
         )
 
-    except (yaml.YAMLError, SpecificationValidationError) as error:
         return _render(
             request=request,
             specification=specification,
-            result=f"Validation error: {error}",
-            result_type="error",
+            result=WebResult(
+                title="Valid specification",
+                message=(
+                    "The specification is valid for "
+                    f"{project_specification.organization}/"
+                    f"{project_specification.repository}."
+                ),
+                result_type="success",
+            ),
+        )
+
+    except (
+        yaml.YAMLError,
+        SpecificationValidationError,
+    ) as error:
+        return _render(
+            request=request,
+            specification=specification,
+            result=WebResult(
+                title="Invalid specification",
+                message=("The YAML specification could not be validated."),
+                result_type="error",
+                errors=[str(error)],
+            ),
         )
 
 
@@ -133,40 +201,16 @@ def dry_run(
             project_specification,
         )
 
-        plan = synchronization_result.plan
-
-        lines: list[str] = []
-
-        executable_actions = plan.executable_actions()
-        drift_actions = plan.drift_actions()
-
-        if plan.is_empty():
-            lines.append("Everything is up to date.")
-
-        if executable_actions:
-            lines.append("Synchronization plan:")
-
-            for action in executable_actions:
-                lines.append(
-                    f"+ {action.description}",
-                )
-
-        if drift_actions:
-            if lines:
-                lines.append("")
-
-            lines.append("Drift detected:")
-
-            for action in drift_actions:
-                lines.append(
-                    f"! {action.description}",
-                )
+        result = _build_plan_result(
+            synchronization_result.plan,
+            title="Dry run complete",
+            message=("The following changes would be applied to GitHub."),
+        )
 
         return _render(
             request=request,
             specification=specification,
-            result="\n".join(lines),
-            result_type="success",
+            result=result,
         )
 
     except (
@@ -176,16 +220,26 @@ def dry_run(
         return _render(
             request=request,
             specification=specification,
-            result=f"Validation error: {error}",
-            result_type="error",
+            result=WebResult(
+                title="Invalid specification",
+                message=(
+                    "The dry run was not executed because the specification is invalid."
+                ),
+                result_type="error",
+                errors=[str(error)],
+            ),
         )
 
     except GitHubError as error:
         return _render(
             request=request,
             specification=specification,
-            result=f"GitHub error: {error}",
-            result_type="error",
+            result=WebResult(
+                title="GitHub error",
+                message=("The current GitHub state could not be loaded."),
+                result_type="error",
+                errors=[str(error)],
+            ),
         )
 
 
@@ -201,11 +255,14 @@ def synchronize(
         return _render(
             request=request,
             specification=specification,
-            result=(
-                "Synchronization was not executed.\n\n"
-                "Confirm the operation before applying changes to GitHub."
+            result=WebResult(
+                title="Confirmation required",
+                message=(
+                    "Synchronization was not executed. Confirm that "
+                    "the operation may modify GitHub resources."
+                ),
+                result_type="warning",
             ),
-            result_type="warning",
         )
 
     try:
@@ -220,39 +277,16 @@ def synchronize(
             project_specification,
         )
 
-        plan = synchronization_result.plan
-
-        executable_actions = plan.executable_actions()
-        drift_actions = plan.drift_actions()
-
-        lines: list[str] = []
-
-        if executable_actions:
-            lines.append("Synchronization complete.")
-            lines.append("")
-            lines.append("Applied synchronization plan:")
-
-            for action in executable_actions:
-                lines.append(
-                    f"+ {action.description}",
-                )
-        else:
-            lines.append("No executable actions to apply.")
-
-        if drift_actions:
-            lines.append("")
-            lines.append("Drift detected:")
-
-            for action in drift_actions:
-                lines.append(
-                    f"! {action.description}",
-                )
+        result = _build_plan_result(
+            synchronization_result.plan,
+            title="Synchronization complete",
+            message=("The supported synchronization actions were applied to GitHub."),
+        )
 
         return _render(
             request=request,
             specification=specification,
-            result="\n".join(lines),
-            result_type="success",
+            result=result,
         )
 
     except (
@@ -262,14 +296,25 @@ def synchronize(
         return _render(
             request=request,
             specification=specification,
-            result=f"Validation error: {error}",
-            result_type="error",
+            result=WebResult(
+                title="Invalid specification",
+                message=(
+                    "Synchronization was not executed because "
+                    "the specification is invalid."
+                ),
+                result_type="error",
+                errors=[str(error)],
+            ),
         )
 
     except GitHubError as error:
         return _render(
             request=request,
             specification=specification,
-            result=f"GitHub error: {error}",
-            result_type="error",
+            result=WebResult(
+                title="GitHub error",
+                message="The current GitHub state could not be loaded.",
+                result_type="error",
+                errors=[str(error)],
+            ),
         )
